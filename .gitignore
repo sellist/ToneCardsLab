@@ -1,3 +1,14 @@
+web/web.iml
+api/api.iml
+
+api/.idea
+
+web/.
+web/src/node_modules
+web/src/.svelte-kit
+web/src/.vscode
+
+
 # Default ignored files
 /shelf/
 /.idea/workspace.xml

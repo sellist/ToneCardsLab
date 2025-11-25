@@ -3,7 +3,6 @@ api/api.iml
 
 api/.idea
 
-web/.
 web/src/node_modules
 web/src/.svelte-kit
 web/src/.vscode
@@ -272,8 +271,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -425,5 +422,3 @@ cython_debug/
 /.idea/modules.xml
 /.idea/ToneCardsLab.iml
 /.idea/vcs.xml
-
-/.idea/workspace.xml

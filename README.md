@@ -1,6 +1,6 @@
 # ToneCards Lab
 
-A full-stack monorepo application for managing Chinese language flashcards, built with FastAPI (backend) and Svelte (frontend).
+A full-stack monorepo application for managing music flashcards, built with FastAPI (backend) and Svelte (frontend).
 
 ### 1. Setup Backend
 

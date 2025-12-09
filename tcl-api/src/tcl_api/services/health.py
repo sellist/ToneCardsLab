@@ -1,4 +1,4 @@
-from tcl_api.models.health import HealthCheckResponse
+from tcl_api.models.health import HealthData
 from tcl_api.config import settings, get_logger
 
 
@@ -6,12 +6,11 @@ class HealthService:
     def __init__(self):
         self.logger = get_logger("services.health")
 
-    def check_health(self) -> HealthCheckResponse:
+    def check_health(self) -> HealthData:
         self.logger.debug("Performing health check")
-        response = HealthCheckResponse(
+        response = HealthData(
             status="healthy",
-            version=settings.app_version,
-            message="Service is running"
+            version=settings.APP_VERSION
         )
         self.logger.info("Health check completed successfully")
         return response

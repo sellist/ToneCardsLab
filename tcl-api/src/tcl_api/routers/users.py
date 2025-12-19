@@ -8,22 +8,17 @@ from sqlalchemy.orm import Session
 from tcl_api.repository.db import get_db
 from tcl_api.repository.db.daos import UserDAO
 from tcl_api.models.user import (
-    UserProfile,
     UserProfileResponse,
     UpdateUserProfileRequest,
     DeleteAccountRequest
 )
-from tcl_api.models.common import (
-    ApiResponse,
-    SuccessResponse,
-    PaginationParams,
-    IdResponse
-)
+from tcl_api.models.builders import ApiResponseBuilder
+from tcl_api.models.response import ApiResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post("/", response_model=UserProfileResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ApiResponse[UserProfileResponse])
 def create_user(
     email: str,
     name: Optional[str] = None,
@@ -48,7 +43,7 @@ def create_user(
     }
     user = user_dao.create(user_data)
 
-    return UserProfileResponse(
+    user_response = UserProfileResponse(
         user_id=str(user.user_id),
         email=user.email,
         name=user.name,
@@ -59,8 +54,10 @@ def create_user(
         shared_decks_count=0
     )
 
+    return ApiResponseBuilder.created().data(user_response.model_dump()).message("User created successfully").build()
 
-@router.get("/{user_id}", response_model=UserProfileResponse)
+
+@router.get("/{user_id}", response_model=ApiResponse[UserProfileResponse])
 def get_user(user_id: UUID, db: Session = Depends(get_db)):
     """Get user profile by ID."""
     user_dao = UserDAO(db)
@@ -80,7 +77,7 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)):
     owned_count = deck_dao.count_by_owner(user.user_id)
     shared_decks = deck_dao.get_shared_with_user(user.user_id)
 
-    return UserProfileResponse(
+    user_response = UserProfileResponse(
         user_id=str(user.user_id),
         email=user.email,
         name=user.name,
@@ -91,8 +88,10 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)):
         shared_decks_count=len(shared_decks)
     )
 
+    return ApiResponseBuilder.ok().data(user_response.model_dump()).build()
 
-@router.get("/email/{email}", response_model=UserProfileResponse)
+
+@router.get("/email/{email}", response_model=ApiResponse[UserProfileResponse])
 def get_user_by_email(email: str, db: Session = Depends(get_db)):
     """Get user profile by email address."""
     user_dao = UserDAO(db)
@@ -109,7 +108,7 @@ def get_user_by_email(email: str, db: Session = Depends(get_db)):
     owned_count = deck_dao.count_by_owner(user.user_id)
     shared_decks = deck_dao.get_shared_with_user(user.user_id)
 
-    return UserProfileResponse(
+    user_response = UserProfileResponse(
         user_id=str(user.user_id),
         email=user.email,
         name=user.name,
@@ -120,8 +119,10 @@ def get_user_by_email(email: str, db: Session = Depends(get_db)):
         shared_decks_count=len(shared_decks)
     )
 
+    return ApiResponseBuilder.ok().data(user_response.model_dump()).build()
 
-@router.patch("/{user_id}", response_model=UserProfileResponse)
+
+@router.patch("/{user_id}", response_model=ApiResponse[UserProfileResponse])
 def update_user(
     user_id: UUID,
     update_data: UpdateUserProfileRequest,
@@ -145,7 +146,7 @@ def update_user(
     owned_count = deck_dao.count_by_owner(user.user_id)
     shared_decks = deck_dao.get_shared_with_user(user.user_id)
 
-    return UserProfileResponse(
+    user_response = UserProfileResponse(
         user_id=str(user.user_id),
         email=user.email,
         name=user.name,
@@ -156,8 +157,10 @@ def update_user(
         shared_decks_count=len(shared_decks)
     )
 
+    return ApiResponseBuilder.ok().data(user_response.model_dump()).message("User updated successfully").build()
 
-@router.delete("/{user_id}", response_model=SuccessResponse)
+
+@router.delete("/{user_id}", response_model=ApiResponse)
 def delete_user(
     user_id: UUID,
     request: DeleteAccountRequest,
@@ -184,13 +187,10 @@ def delete_user(
     # Soft delete user
     user_dao.soft_delete(user_id)
 
-    return SuccessResponse(
-        success=True,
-        message="User account deleted successfully"
-    )
+    return ApiResponseBuilder.ok().message("User account deleted successfully").build()
 
 
-@router.get("/", response_model=List[UserProfileResponse])
+@router.get("/", response_model=ApiResponse[List[UserProfileResponse]])
 def list_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
@@ -216,7 +216,7 @@ def list_users(
             updated_at=user.updated_at,
             owned_decks_count=0,
             shared_decks_count=0
-        ))
+        ).model_dump())
 
-    return result
+    return ApiResponseBuilder.ok().data(result).build()
 

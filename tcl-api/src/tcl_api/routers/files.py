@@ -9,15 +9,15 @@ from tcl_api.repository.db import get_db
 from tcl_api.repository.db.daos import UploadedFileDAO, UserDAO, DeckDAO
 from tcl_api.models.file import (
     UploadedFile as UploadedFileModel,
-    UserFilesResponse,
-    DeleteFileRequest
+    UserFilesResponse
 )
-from tcl_api.models.common import SuccessResponse
+from tcl_api.models.builders import ApiResponseBuilder
+from tcl_api.models.response import ApiResponse
 
 router = APIRouter(prefix="/files", tags=["files"])
 
 
-@router.post("/upload", response_model=UploadedFileModel, status_code=status.HTTP_201_CREATED)
+@router.post("/upload", response_model=ApiResponse[UploadedFileModel])
 async def upload_file(
     file: UploadFile = File(...),
     user_id: UUID = Query(..., description="User ID uploading the file"),
@@ -66,7 +66,7 @@ async def upload_file(
 
     uploaded_file = file_dao.create(file_data)
 
-    return UploadedFileModel(
+    file_response = UploadedFileModel(
         file_id=str(uploaded_file.file_id),
         file_url=uploaded_file.file_url,
         file_name=uploaded_file.file_name,
@@ -76,8 +76,10 @@ async def upload_file(
         deck_id=str(uploaded_file.deck_id) if uploaded_file.deck_id else None
     )
 
+    return ApiResponseBuilder.created().data(file_response.model_dump()).message("File uploaded successfully").build()
 
-@router.get("/{file_id}", response_model=UploadedFileModel)
+
+@router.get("/{file_id}", response_model=ApiResponse[UploadedFileModel])
 def get_file(file_id: UUID, db: Session = Depends(get_db)):
     """Get file metadata by ID."""
     file_dao = UploadedFileDAO(db)
@@ -89,7 +91,7 @@ def get_file(file_id: UUID, db: Session = Depends(get_db)):
             detail="File not found"
         )
 
-    return UploadedFileModel(
+    file_response = UploadedFileModel(
         file_id=str(file.file_id),
         file_url=file.file_url,
         file_name=file.file_name,
@@ -99,8 +101,10 @@ def get_file(file_id: UUID, db: Session = Depends(get_db)):
         deck_id=str(file.deck_id) if file.deck_id else None
     )
 
+    return ApiResponseBuilder.ok().data(file_response.model_dump()).build()
 
-@router.get("/user/{user_id}", response_model=UserFilesResponse)
+
+@router.get("/user/{user_id}", response_model=ApiResponse[UserFilesResponse])
 def get_user_files(
     user_id: UUID,
     skip: int = Query(0, ge=0),
@@ -135,14 +139,16 @@ def get_user_files(
         for f in files
     ]
 
-    return UserFilesResponse(
+    user_files_response = UserFilesResponse(
         files=file_models,
         total_size=total_size,
         total_count=len(files)
     )
 
+    return ApiResponseBuilder.ok().data(user_files_response.model_dump()).build()
 
-@router.get("/deck/{deck_id}", response_model=List[UploadedFileModel])
+
+@router.get("/deck/{deck_id}", response_model=ApiResponse[List[UploadedFileModel]])
 def get_deck_files(deck_id: UUID, db: Session = Depends(get_db)):
     """Get all files associated with a deck."""
     deck_dao = DeckDAO(db)
@@ -158,7 +164,7 @@ def get_deck_files(deck_id: UUID, db: Session = Depends(get_db)):
 
     files = file_dao.get_by_deck(deck_id)
 
-    return [
+    file_models = [
         UploadedFileModel(
             file_id=str(f.file_id),
             file_url=f.file_url,
@@ -167,12 +173,14 @@ def get_deck_files(deck_id: UUID, db: Session = Depends(get_db)):
             mime_type=f.mime_type,
             uploaded_at=f.uploaded_at,
             deck_id=str(f.deck_id) if f.deck_id else None
-        )
+        ).model_dump()
         for f in files
     ]
 
+    return ApiResponseBuilder.ok().data(file_models).build()
 
-@router.delete("/{file_id}", response_model=SuccessResponse)
+
+@router.delete("/{file_id}", response_model=ApiResponse)
 def delete_file(file_id: UUID, db: Session = Depends(get_db)):
     """Delete a file (soft delete)."""
     file_dao = UploadedFileDAO(db)
@@ -187,13 +195,10 @@ def delete_file(file_id: UUID, db: Session = Depends(get_db)):
     # In production, also delete from storage service
     # storage_service.delete(file.file_url)
 
-    return SuccessResponse(
-        success=True,
-        message="File deleted successfully"
-    )
+    return ApiResponseBuilder.ok().message("File deleted successfully").build()
 
 
-@router.delete("/{file_id}/permanent", response_model=SuccessResponse)
+@router.delete("/{file_id}/permanent", response_model=ApiResponse)
 def permanently_delete_file(
     file_id: UUID,
     db: Session = Depends(get_db)
@@ -220,13 +225,10 @@ def permanently_delete_file(
             detail="Failed to delete file"
         )
 
-    return SuccessResponse(
-        success=True,
-        message="File permanently deleted"
-    )
+    return ApiResponseBuilder.ok().message("File permanently deleted").build()
 
 
-@router.post("/bulk-upload", response_model=List[UploadedFileModel], status_code=status.HTTP_201_CREATED)
+@router.post("/bulk-upload", response_model=ApiResponse[List[UploadedFileModel]])
 async def bulk_upload_files(
     files: List[UploadFile] = File(...),
     user_id: UUID = Query(..., description="User ID uploading files"),
@@ -282,7 +284,7 @@ async def bulk_upload_files(
             mime_type=uploaded_file.mime_type,
             uploaded_at=uploaded_file.uploaded_at,
             deck_id=str(uploaded_file.deck_id) if uploaded_file.deck_id else None
-        ))
+        ).model_dump())
 
-    return uploaded_files
+    return ApiResponseBuilder.created().data(uploaded_files).message(f"Successfully uploaded {len(uploaded_files)} files").build()
 

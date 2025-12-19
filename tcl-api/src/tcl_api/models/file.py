@@ -3,7 +3,6 @@
 from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional
 from datetime import datetime
-from .common import FileUploadResponse
 
 
 class UploadFileRequest(BaseModel):

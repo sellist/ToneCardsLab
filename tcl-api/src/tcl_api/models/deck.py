@@ -3,11 +3,13 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from enum import Enum
-from .common import TimestampMixin, OwnershipMixin, IdResponse
+
+from .base import ExportableModel
+from .common import OwnershipMixin
 from .card import Card
 
 
-class DeckBase(BaseModel):
+class DeckBase(ExportableModel):
     """Base deck model with common fields."""
     title: str = Field(..., min_length=1, max_length=200, description="Deck title")
     description: Optional[str] = Field(None, max_length=1000, description="Deck description")
@@ -33,11 +35,6 @@ class DeckSummary(DeckBase, OwnershipMixin):
     shared_with_count: int = Field(default=0, description="Number of users with viewer access")
 
 
-class DeckSummaryResponse(DeckSummary, TimestampMixin):
-    """Deck summary response with timestamps."""
-    pass
-
-
 class Deck(DeckBase, OwnershipMixin):
     """Full deck model including all cards."""
     deck_id: str = Field(..., description="UUID of the deck")
@@ -46,32 +43,6 @@ class Deck(DeckBase, OwnershipMixin):
         default_factory=list,
         description="List of user IDs with viewer access"
     )
-
-
-class DeckResponse(Deck, TimestampMixin):
-    """Full deck response with timestamps and metadata."""
-    pass
-
-
-class DeckListResponse(BaseModel):
-    """Response for deck list endpoints with categorization."""
-    owned_decks: List[DeckSummaryResponse] = Field(
-        default_factory=list,
-        description="Decks owned by the user"
-    )
-    shared_decks: List[DeckSummaryResponse] = Field(
-        default_factory=list,
-        description="Decks shared with the user (viewer access)"
-    )
-
-
-class DeckStatistics(BaseModel):
-    """Deck statistics response."""
-    deck_id: str = Field(..., description="UUID of the deck")
-    card_count: int = Field(..., description="Number of cards in the deck")
-    last_modified: str = Field(..., description="ISO 8601 timestamp of last modification")
-    view_count: Optional[int] = Field(None, description="Number of times deck has been viewed")
-    usage_stats: Optional[dict] = Field(None, description="Additional usage statistics")
 
 
 class DeckExportFormat(str, Enum):

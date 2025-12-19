@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from tcl_api.models import ApiResponse
 from tcl_api.repository.db import get_db
 from tcl_api.repository.db.daos import (
     DeckDAO, UserDAO, DeckViewerDAO, DeckInvitationDAO
@@ -16,12 +17,11 @@ from tcl_api.models.sharing import (
     ShareByEmailRequest,
     ShareByEmailResponse
 )
-from tcl_api.models.common import SuccessResponse
-
+from tcl_api.models.builders import ApiResponseBuilder
 router = APIRouter(prefix="/sharing", tags=["sharing"])
 
 
-@router.get("/decks/{deck_id}/viewers", response_model=ViewersResponse)
+@router.get("/decks/{deck_id}/viewers", response_model=ApiResponse[ViewersResponse])
 def get_deck_viewers(deck_id: UUID, db: Session = Depends(get_db)):
     """Get list of users who have viewer access to a deck."""
     deck_dao = DeckDAO(db)
@@ -37,13 +37,15 @@ def get_deck_viewers(deck_id: UUID, db: Session = Depends(get_db)):
 
     viewer_ids = viewer_dao.get_viewer_ids(deck_id)
 
-    return ViewersResponse(
+    viewers_data = ViewersResponse(
         deck_id=str(deck_id),
         viewer_ids=[str(vid) for vid in viewer_ids]
     )
 
+    return ApiResponseBuilder.ok().data(viewers_data.model_dump()).build()
 
-@router.post("/decks/{deck_id}/viewers", response_model=ViewersResponse)
+
+@router.post("/decks/{deck_id}/viewers", response_model=ApiResponse[ViewersResponse])
 def edit_deck_viewers(
     deck_id: UUID,
     request: EditViewersRequest,
@@ -95,13 +97,15 @@ def edit_deck_viewers(
     # Get updated viewer list
     viewer_ids = viewer_dao.get_viewer_ids(deck_id)
 
-    return ViewersResponse(
+    viewers_data = ViewersResponse(
         deck_id=str(deck_id),
         viewer_ids=[str(vid) for vid in viewer_ids]
     )
 
+    return ApiResponseBuilder.ok().data(viewers_data.model_dump()).message("Viewers updated successfully").build()
 
-@router.post("/decks/{deck_id}/share-by-email", response_model=ShareByEmailResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post("/decks/{deck_id}/share-by-email", response_model=ApiResponse[ShareByEmailResponse])
 def share_deck_by_email(
     deck_id: UUID,
     request: ShareByEmailRequest,
@@ -134,7 +138,7 @@ def share_deck_by_email(
         "recipient_email": request.recipient_email,
         "message": request.message,
         "status": "sent",
-        "expires_at": datetime.utcnow() + timedelta(days=7)
+        "expires_at": datetime.now(datetime.timezone.utc) + timedelta(days=7)
     }
 
     invitation = invitation_dao.create(invitation_data)
@@ -142,14 +146,16 @@ def share_deck_by_email(
     # In production, send actual email here
     # email_service.send_invitation(invitation)
 
-    return ShareByEmailResponse(
+    invitation_response = ShareByEmailResponse(
         invitation_id=str(invitation.invitation_id),
         status="sent",
         expires_at=invitation.expires_at.isoformat()
     )
 
+    return ApiResponseBuilder.created().data(invitation_response.model_dump()).message("Invitation sent successfully").build()
 
-@router.get("/invitations/{invitation_id}", response_model=ShareByEmailResponse)
+
+@router.get("/invitations/{invitation_id}", response_model=ApiResponse[ShareByEmailResponse])
 def get_invitation(invitation_id: UUID, db: Session = Depends(get_db)):
     """Get invitation details."""
     invitation_dao = DeckInvitationDAO(db)
@@ -161,14 +167,16 @@ def get_invitation(invitation_id: UUID, db: Session = Depends(get_db)):
             detail="Invitation not found"
         )
 
-    return ShareByEmailResponse(
+    invitation_response = ShareByEmailResponse(
         invitation_id=str(invitation.invitation_id),
         status=invitation.status,
         expires_at=invitation.expires_at.isoformat() if invitation.expires_at else None
     )
 
+    return ApiResponseBuilder.ok().data(invitation_response.model_dump()).build()
 
-@router.post("/invitations/{invitation_id}/accept", response_model=SuccessResponse)
+
+@router.post("/invitations/{invitation_id}/accept", response_model=ApiResponse)
 def accept_invitation(
     invitation_id: UUID,
     user_email: str,  # Should come from authenticated user
@@ -202,7 +210,7 @@ def accept_invitation(
         )
 
     # Check expiration
-    if invitation.expires_at < datetime.utcnow():
+    if invitation.expires_at < datetime.now(datetime.timezone.utc):
         invitation_dao.update(invitation_id, {"status": "expired"})
         raise HTTPException(
             status_code=status.HTTP_410_GONE,
@@ -228,30 +236,29 @@ def accept_invitation(
     # Mark invitation as accepted
     invitation_dao.accept_invitation(invitation_id)
 
-    return SuccessResponse(
-        success=True,
-        message="Invitation accepted successfully"
-    )
+    return ApiResponseBuilder.ok().message("Invitation accepted successfully").build()
 
 
-@router.get("/invitations/email/{email}", response_model=List[ShareByEmailResponse])
+@router.get("/invitations/email/{email}", response_model=ApiResponse[List[ShareByEmailResponse]])
 def get_user_invitations(email: str, db: Session = Depends(get_db)):
     """Get pending invitations for a user's email."""
     invitation_dao = DeckInvitationDAO(db)
 
     invitations = invitation_dao.get_pending_invitations(email)
 
-    return [
+    invitations_data = [
         ShareByEmailResponse(
             invitation_id=str(inv.invitation_id),
             status=inv.status,
             expires_at=inv.expires_at.isoformat() if inv.expires_at else None
-        )
+        ).model_dump()
         for inv in invitations
     ]
 
+    return ApiResponseBuilder.ok().data(invitations_data).build()
 
-@router.delete("/invitations/{invitation_id}", response_model=SuccessResponse)
+
+@router.delete("/invitations/{invitation_id}", response_model=ApiResponse)
 def revoke_invitation(
     invitation_id: UUID,
     db: Session = Depends(get_db)
@@ -266,13 +273,10 @@ def revoke_invitation(
             detail="Invitation not found"
         )
 
-    return SuccessResponse(
-        success=True,
-        message="Invitation revoked successfully"
-    )
+    return ApiResponseBuilder.ok().message("Invitation revoked successfully").build()
 
 
-@router.post("/decks/{deck_id}/viewers/{viewer_id}/remove", response_model=SuccessResponse)
+@router.post("/decks/{deck_id}/viewers/{viewer_id}/remove", response_model=ApiResponse)
 def remove_viewer(
     deck_id: UUID,
     viewer_id: UUID,
@@ -305,8 +309,5 @@ def remove_viewer(
             detail="Viewer not found for this deck"
         )
 
-    return SuccessResponse(
-        success=True,
-        message="Viewer removed successfully"
-    )
+    return ApiResponseBuilder.ok().message("Viewer removed successfully").build()
 

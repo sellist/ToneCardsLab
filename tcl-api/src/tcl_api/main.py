@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tcl_api.config import settings, setup_logging, get_logger
-from tcl_api.controllers import health_router, note_router
 from tcl_api.routers import (
     users_router, decks_router, cards_router,
     sharing_router, files_router
@@ -56,8 +55,6 @@ def create_app() -> FastAPI:
     )
 
     logger.info("Loading routers")
-    app.include_router(health_router, prefix=settings.api_prefix)
-    app.include_router(note_router, prefix=settings.api_prefix)
 
     # DAO-based routers
     app.include_router(users_router, prefix=settings.api_prefix)

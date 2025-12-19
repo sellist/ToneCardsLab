@@ -10,15 +10,16 @@ from tcl_api.repository.db.daos import CardDAO, DeckDAO
 from tcl_api.models.card import (
     CardCreate,
     CardUpdate,
-    CardResponse,
-    ReorderCardsRequest
+    ReorderCardsRequest,
+    Card
 )
-from tcl_api.models.common import SuccessResponse, IdResponse
-
+from tcl_api.models.builders import ApiResponseBuilder
+from tcl_api.models.response import ApiResponse
+from tcl_api.models.base import EntitySerializer
 router = APIRouter(prefix="/cards", tags=["cards"])
 
 
-@router.post("/", response_model=CardResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ApiResponse[Card])
 def create_card(
     card_data: CardCreate,
     deck_id: UUID = Query(..., description="Deck ID to add card to"),
@@ -50,16 +51,11 @@ def create_card(
     }
     card = card_dao.create(card_dict)
 
-    return CardResponse(
-        card_id=str(card.card_id),
-        front_content=card.front_content,
-        back_content=card.back_content,
-        front_renderer=card.front_renderer,
-        back_renderer=card.back_renderer
-    )
+    card_data = EntitySerializer.serialize_card(card)
+    return ApiResponseBuilder.created().data(card_data).message("Card created successfully").build()
 
 
-@router.get("/{card_id}", response_model=CardResponse)
+@router.get("/{card_id}", response_model=ApiResponse[Card])
 def get_card(card_id: UUID, db: Session = Depends(get_db)):
     """Get a specific card by ID."""
     card_dao = CardDAO(db)
@@ -71,22 +67,16 @@ def get_card(card_id: UUID, db: Session = Depends(get_db)):
             detail="Card not found"
         )
 
-    return CardResponse(
-        card_id=str(card.card_id),
-        front_content=card.front_content,
-        back_content=card.back_content,
-        front_renderer=card.front_renderer,
-        back_renderer=card.back_renderer
-    )
+    card_data = EntitySerializer.serialize_card(card)
+    return ApiResponseBuilder.ok().data(card_data).build()
 
 
-@router.get("/deck/{deck_id}", response_model=List[CardResponse])
+@router.get("/deck/{deck_id}", response_model=ApiResponse[List[Card]])
 def get_deck_cards(deck_id: UUID, db: Session = Depends(get_db)):
     """Get all cards in a deck, ordered by position."""
     deck_dao = DeckDAO(db)
     card_dao = CardDAO(db)
 
-    # Verify deck exists
     deck = deck_dao.get_by_id(deck_id)
     if not deck or deck.deleted_at:
         raise HTTPException(
@@ -95,26 +85,17 @@ def get_deck_cards(deck_id: UUID, db: Session = Depends(get_db)):
         )
 
     cards = card_dao.get_by_deck(deck_id)
+    cards_data = [EntitySerializer.serialize_card(card) for card in cards]
 
-    return [
-        CardResponse(
-            card_id=str(card.card_id),
-            front_content=card.front_content,
-            back_content=card.back_content,
-            front_renderer=card.front_renderer,
-            back_renderer=card.back_renderer
-        )
-        for card in cards
-    ]
+    return ApiResponseBuilder.ok().data(cards_data).build()
 
 
-@router.patch("/{card_id}", response_model=CardResponse)
+@router.patch("/{card_id}", response_model=ApiResponse[Card])
 def update_card(
     card_id: UUID,
     card_update: CardUpdate,
     db: Session = Depends(get_db)
 ):
-    """Update a card's content or renderer."""
     card_dao = CardDAO(db)
 
     update_dict = card_update.model_dump(exclude_unset=True)
@@ -126,16 +107,11 @@ def update_card(
             detail="Card not found"
         )
 
-    return CardResponse(
-        card_id=str(card.card_id),
-        front_content=card.front_content,
-        back_content=card.back_content,
-        front_renderer=card.front_renderer,
-        back_renderer=card.back_renderer
-    )
+    card_data = EntitySerializer.serialize_card(card)
+    return ApiResponseBuilder.ok().data(card_data).message("Card updated successfully").build()
 
 
-@router.delete("/{card_id}", response_model=SuccessResponse)
+@router.delete("/{card_id}", response_model=ApiResponse)
 def delete_card(card_id: UUID, db: Session = Depends(get_db)):
     """Delete a card from a deck."""
     card_dao = CardDAO(db)
@@ -147,13 +123,10 @@ def delete_card(card_id: UUID, db: Session = Depends(get_db)):
             detail="Card not found"
         )
 
-    return SuccessResponse(
-        success=True,
-        message="Card deleted successfully"
-    )
+    return ApiResponseBuilder.ok().message("Card deleted successfully").build()
 
 
-@router.post("/deck/{deck_id}/reorder", response_model=SuccessResponse)
+@router.post("/deck/{deck_id}/reorder", response_model=ApiResponse)
 def reorder_cards(
     deck_id: UUID,
     reorder_request: ReorderCardsRequest,
@@ -182,31 +155,24 @@ def reorder_cards(
                 detail=f"Card {card_id_str} does not belong to this deck"
             )
 
-    # Create position mapping
     card_positions: Dict[UUID, int] = {}
     for position, card_id_str in enumerate(reorder_request.card_order):
         card_positions[UUID(card_id_str)] = position
 
-    # Update positions
     card_dao.reorder_cards(card_positions)
 
-    return SuccessResponse(
-        success=True,
-        message=f"Reordered {len(reorder_request.card_order)} cards successfully"
-    )
+    return ApiResponseBuilder.ok().message(f"Reordered {len(reorder_request.card_order)} cards successfully").build()
 
 
-@router.post("/deck/{deck_id}/bulk-create", response_model=List[CardResponse], status_code=status.HTTP_201_CREATED)
+@router.post("/deck/{deck_id}/bulk-create", response_model=ApiResponse[List[Card]])
 def bulk_create_cards(
     deck_id: UUID,
     cards_data: List[CardCreate],
     db: Session = Depends(get_db)
 ):
-    """Create multiple cards in a deck at once."""
     deck_dao = DeckDAO(db)
     card_dao = CardDAO(db)
 
-    # Verify deck exists
     deck = deck_dao.get_by_id(deck_id)
     if not deck or deck.deleted_at:
         raise HTTPException(
@@ -214,10 +180,8 @@ def bulk_create_cards(
             detail="Deck not found"
         )
 
-    # Get starting position
     current_count = card_dao.count_by_deck(deck_id)
 
-    # Prepare card data
     cards_to_create = []
     for i, card_data in enumerate(cards_data):
         cards_to_create.append({
@@ -231,26 +195,16 @@ def bulk_create_cards(
 
     # Bulk create
     created_cards = card_dao.bulk_create(cards_to_create)
+    cards_response_data = [EntitySerializer.serialize_card(card) for card in created_cards]
 
-    return [
-        CardResponse(
-            card_id=str(card.card_id),
-            front_content=card.front_content,
-            back_content=card.back_content,
-            front_renderer=card.front_renderer,
-            back_renderer=card.back_renderer
-        )
-        for card in created_cards
-    ]
+    return ApiResponseBuilder.created().data(cards_response_data).message(f"Created {len(created_cards)} cards successfully").build()
 
 
-@router.delete("/deck/{deck_id}/all", response_model=SuccessResponse)
+@router.delete("/deck/{deck_id}/all", response_model=ApiResponse)
 def delete_all_cards_in_deck(deck_id: UUID, db: Session = Depends(get_db)):
-    """Delete all cards in a deck."""
     deck_dao = DeckDAO(db)
     card_dao = CardDAO(db)
 
-    # Verify deck exists
     deck = deck_dao.get_by_id(deck_id)
     if not deck or deck.deleted_at:
         raise HTTPException(
@@ -260,8 +214,5 @@ def delete_all_cards_in_deck(deck_id: UUID, db: Session = Depends(get_db)):
 
     count = card_dao.delete_by_deck(deck_id)
 
-    return SuccessResponse(
-        success=True,
-        message=f"Deleted {count} cards from deck"
-    )
+    return ApiResponseBuilder.ok().message(f"Deleted {count} cards from deck").build()
 

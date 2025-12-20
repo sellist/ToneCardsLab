@@ -1,5 +1,3 @@
-"""Database repository layer."""
-
 from .base import BaseDAO
 from .database import get_db, init_db
 

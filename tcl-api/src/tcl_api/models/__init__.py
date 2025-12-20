@@ -16,7 +16,6 @@ from .common import (
     ReportRequest,
 )
 
-# Auth models
 from .auth import (
     LoginRequest,
     LoginResponse,
@@ -24,7 +23,6 @@ from .auth import (
     LogoutRequest
 )
 
-# User models
 from .user import (
     User,
     UserCreate,
@@ -32,7 +30,6 @@ from .user import (
     UserDeleteConfirm
 )
 
-# Card models
 from .card import (
     RendererType,
     CardBase,
@@ -42,7 +39,6 @@ from .card import (
     ReorderCardsRequest
 )
 
-# Deck models
 from .deck import (
     DeckBase,
     DeckCreate,
@@ -56,7 +52,6 @@ from .deck import (
     TogglePublicStatusRequest
 )
 
-# Sharing models
 from .sharing import (
     ViewersResponse,
     EditViewersRequest,
@@ -64,7 +59,6 @@ from .sharing import (
     ShareByEmailResponse
 )
 
-# File models
 from .file import (
     UploadFileRequest,
     UploadedFile,
@@ -73,14 +67,12 @@ from .file import (
 )
 
 __all__ = [
-    # Legacy models
     "HealthResponse",
     "ApiResponse",
     "ErrorResponse",
     "PaginatedResponse",
     "Metadata",
 
-    # Common models
     "ResponseStatus",
     "ErrorDetail",
     "CommonApiResponse",
@@ -93,13 +85,11 @@ __all__ = [
     "SearchParams",
     "ReportRequest",
 
-    # Auth models
     "LoginRequest",
     "LoginResponse",
     "RefreshTokenRequest",
     "LogoutRequest",
 
-    # User models
     "User",
     "UserCreate",
     "UserUpdate",

@@ -387,7 +387,6 @@
           "decks"
         ],
         "summary": "List Decks",
-        "description": "List decks with filtering and pagination.",
         "operationId": "list_decks_api_v1_decks__get",
         "parameters": [
           {
@@ -535,7 +534,6 @@
           "decks"
         ],
         "summary": "Update Deck",
-        "description": "Update deck information.",
         "operationId": "update_deck_api_v1_decks__deck_id__patch",
         "parameters": [
           {
@@ -587,7 +585,6 @@
           "decks"
         ],
         "summary": "Delete Deck",
-        "description": "Delete a deck (soft delete).",
         "operationId": "delete_deck_api_v1_decks__deck_id__delete",
         "parameters": [
           {
@@ -717,7 +714,6 @@
           "decks"
         ],
         "summary": "Toggle Public Status",
-        "description": "Toggle deck public/private status.",
         "operationId": "toggle_public_status_api_v1_decks__deck_id__toggle_public_post",
         "parameters": [
           {

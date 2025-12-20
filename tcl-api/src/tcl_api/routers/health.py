@@ -7,7 +7,6 @@ from tcl_api.config import get_logger
 router = APIRouter(prefix="/health", tags=["health"])
 logger = get_logger("controllers.health")
 
-# type alias for Fastapi compatibility
 HealthApiResponse = ApiResponse[HealthResponse]
 
 

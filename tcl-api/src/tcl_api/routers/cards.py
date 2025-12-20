@@ -15,7 +15,6 @@ from tcl_api.models.card import (
 )
 from tcl_api.models.builders import ApiResponseBuilder
 from tcl_api.models.response import ApiResponse
-from tcl_api.models.base import EntitySerializer
 router = APIRouter(prefix="/cards", tags=["cards"])
 
 

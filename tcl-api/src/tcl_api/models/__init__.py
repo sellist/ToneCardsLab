@@ -1,4 +1,4 @@
-from .health import HealthData
+from .health import HealthResponse
 from .response import ApiResponse, ErrorResponse, PaginatedResponse, Metadata
 
 # Common models
@@ -26,10 +26,10 @@ from .auth import (
 
 # User models
 from .user import (
-    UserProfile,
-    UserProfileResponse,
-    UpdateUserProfileRequest,
-    DeleteAccountRequest
+    User,
+    UserCreate,
+    UserUpdate,
+    UserDeleteConfirm
 )
 
 # Card models
@@ -74,7 +74,7 @@ from .file import (
 
 __all__ = [
     # Legacy models
-    "HealthData",
+    "HealthResponse",
     "ApiResponse",
     "ErrorResponse",
     "PaginatedResponse",
@@ -100,10 +100,10 @@ __all__ = [
     "LogoutRequest",
 
     # User models
-    "UserProfile",
-    "UserProfileResponse",
-    "UpdateUserProfileRequest",
-    "DeleteAccountRequest",
+    "User",
+    "UserCreate",
+    "UserUpdate",
+    "UserDeleteConfirm",
 
     # Card models
     "RendererType",

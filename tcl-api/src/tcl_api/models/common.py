@@ -24,7 +24,6 @@ T = TypeVar('T')
 
 
 class ApiResponse(BaseModel, Generic[T]):
-    """Generic API response wrapper for consistent response structure."""
     status: ResponseStatus = Field(..., description="Response status")
     data: Optional[T] = Field(None, description="Response data payload")
     error: Optional[ErrorDetail] = Field(None, description="Error details if status is failure/error")

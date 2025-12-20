@@ -1,4 +1,3 @@
-"""User service with business logic."""
 
 from typing import Optional, List, Dict, Any
 from uuid import UUID
@@ -27,7 +26,6 @@ class UserService:
         initialize_dao_factory(db)
 
     def _check_user_exists(self, user_id: UUID) -> User:
-        """Check if user exists and is not deleted."""
         user = self.user_dao.get_by_id(user_id)
         if not user or user.deleted_at:
             self.logger.warning(f"User not found or deleted: {user_id}")
@@ -38,7 +36,6 @@ class UserService:
         return user
 
     def _check_email_exists(self, email: str) -> bool:
-        """Check if email is already in use."""
         user = self.user_dao.get_by_email(email)
         return user is not None
 
@@ -48,10 +45,8 @@ class UserService:
         name: Optional[str] = None,
         preferences: Optional[Dict[str, Any]] = None
     ) -> User:
-        """Create a new user."""
         self.logger.debug(f"Creating user with email: {email}")
 
-        # Check if user already exists
         if self._check_email_exists(email):
             self.logger.warning(f"User already exists with email: {email}")
             raise HTTPException(
@@ -59,7 +54,6 @@ class UserService:
                 detail="User with this email already exists"
             )
 
-        # Create user
         user_data = {
             "email": email,
             "name": name,
@@ -71,15 +65,12 @@ class UserService:
         return user
 
     def get_user_by_id(self, user_id: UUID) -> Dict[str, Any]:
-        """Get user profile by ID with deck counts."""
         self.logger.debug(f"Retrieving user: {user_id}")
 
         user = self._check_user_exists(user_id)
 
-        # Count owned decks
         owned_count = self.deck_dao.count_by_owner(user.user_id)
 
-        # Count shared decks
         shared_decks = self.deck_dao.get_shared_with_user(user.user_id)
         shared_count = len(shared_decks) if shared_decks else 0
 
@@ -88,7 +79,6 @@ class UserService:
         return user.serialize(owned_count, shared_count)
 
     def get_user_by_email(self, email: str) -> Dict[str, Any]:
-        """Get user profile by email with deck counts."""
         self.logger.debug(f"Retrieving user by email: {email}")
 
         user = self.user_dao.get_by_email(email)
@@ -99,10 +89,8 @@ class UserService:
                 detail="User not found"
             )
 
-        # Count owned decks
         owned_count = self.deck_dao.count_by_owner(user.user_id)
 
-        # Count shared decks
         shared_decks = self.deck_dao.get_shared_with_user(user.user_id)
         shared_count = len(shared_decks) if shared_decks else 0
 
@@ -116,13 +104,10 @@ class UserService:
         name: Optional[str] = None,
         preferences: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """Update user profile."""
         self.logger.debug(f"Updating user: {user_id}")
 
-        # Check user exists
         user = self._check_user_exists(user_id)
 
-        # Prepare update data
         update_data = {}
         if name is not None:
             update_data["name"] = name
@@ -136,13 +121,10 @@ class UserService:
                 detail="No fields to update"
             )
 
-        # Update user
         user = self.user_dao.update(user_id, update_data)
 
-        # Count owned decks
         owned_count = self.deck_dao.count_by_owner(user.user_id)
 
-        # Count shared decks
         shared_decks = self.deck_dao.get_shared_with_user(user.user_id)
         shared_count = len(shared_decks) if shared_decks else 0
 
@@ -151,13 +133,10 @@ class UserService:
         return user.serialize(owned_count, shared_count)
 
     def delete_user(self, user_id: UUID) -> None:
-        """Soft delete user account."""
         self.logger.debug(f"Deleting user: {user_id}")
 
-        # Check user exists
         user = self._check_user_exists(user_id)
 
-        # Soft delete user
         self.user_dao.soft_delete(user_id)
 
         self.logger.info(f"Successfully deleted user: {user_id}")
@@ -168,22 +147,17 @@ class UserService:
         limit: int = 20,
         search: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """List active users with optional search."""
         self.logger.debug(f"Listing users: skip={skip}, limit={limit}, search={search}")
 
-        # Get users
         if search:
             users = self.user_dao.search_by_name_or_email(search, skip=skip, limit=limit)
         else:
             users = self.user_dao.get_active_users(skip=skip, limit=limit)
 
-        # Serialize users
         result = []
         for user in users:
-            # Count owned decks
             owned_count = self.deck_dao.count_by_owner(user.user_id)
 
-            # Count shared decks
             shared_decks = self.deck_dao.get_shared_with_user(user.user_id)
             shared_count = len(shared_decks) if shared_decks else 0
 
@@ -193,7 +167,6 @@ class UserService:
         return result
 
     def get_user_stats(self, user_id: UUID) -> Dict[str, Any]:
-        """Get user statistics."""
         self.logger.debug(f"Getting stats for user: {user_id}")
 
         user = self._check_user_exists(user_id)

@@ -1,4 +1,4 @@
-from tcl_api.models.health import HealthData
+from tcl_api.models.health import HealthResponse
 from tcl_api.config import settings, get_logger
 
 
@@ -6,9 +6,9 @@ class HealthService:
     def __init__(self):
         self.logger = get_logger("services.health")
 
-    def check_health(self) -> HealthData:
+    def check_health(self) -> HealthResponse:
         self.logger.debug("Performing health check")
-        response = HealthData(
+        response = HealthResponse(
             status="healthy",
             version=settings.APP_VERSION
         )

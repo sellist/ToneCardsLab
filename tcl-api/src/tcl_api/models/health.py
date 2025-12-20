@@ -4,7 +4,7 @@ import time
 _START_TIME = time.monotonic()
 
 
-class HealthData(BaseModel):
+class HealthResponse(BaseModel):
     status: str
     version: str
     uptime_seconds: float = 0.0

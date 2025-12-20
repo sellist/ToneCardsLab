@@ -1,4 +1,3 @@
-"""SQLAlchemy ORM models for the database schema."""
 
 import enum
 from datetime import datetime
@@ -35,7 +34,6 @@ class GUID(TypeDecorator):
 
 
 class RendererType(str, enum.Enum):
-    """Content renderer types for cards."""
     STRING = "string"
     MARKDOWN = "markdown"
     ABC_JS = "abc_js"
@@ -55,7 +53,6 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relationships
     owned_decks = relationship("Deck", back_populates="owner", foreign_keys="[Deck.owner_id]")
     viewed_decks = relationship("DeckViewer", back_populates="viewer", foreign_keys="[DeckViewer.viewer_id]")
     uploaded_files = relationship("UploadedFile", back_populates="user")
@@ -68,7 +65,6 @@ class User(Base):
     )
 
     def serialize(self, owned_decks_count: int = 0, shared_decks_count: int = 0) -> Dict[str, Any]:
-        """Serialize user to dictionary with deck counts."""
         return {
             "user_id": str(self.user_id),
             "email": self.email,
@@ -93,7 +89,6 @@ class Deck(Base):
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relationships
     owner = relationship("User", back_populates="owned_decks", foreign_keys=[owner_id])
     cards = relationship("Card", back_populates="deck", cascade="all, delete-orphan")
     viewers = relationship("DeckViewer", back_populates="deck", cascade="all, delete-orphan")
@@ -113,7 +108,6 @@ class Deck(Base):
     )
 
     def serialize(self, cards: Optional[List['Card']] = None, viewers: Optional[List[str]] = None) -> Dict[str, Any]:
-        """Serialize deck with cards and viewers."""
         return {
             "deck_id": str(self.deck_id),
             "owner_id": str(self.owner_id),
@@ -127,7 +121,6 @@ class Deck(Base):
         }
 
     def serialize_summary(self, card_count: int = 0, viewer_count: int = 0) -> Dict[str, Any]:
-        """Serialize deck as summary with counts."""
         return {
             "deck_id": str(self.deck_id),
             "owner_id": str(self.owner_id),
@@ -154,7 +147,6 @@ class Card(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
-    # Relationships
     deck = relationship("Deck", back_populates="cards")
 
     __table_args__ = (
@@ -164,7 +156,6 @@ class Card(Base):
     )
 
     def serialize(self) -> Dict[str, Any]:
-        """Serialize card to dictionary."""
         return {
             "card_id": str(self.card_id),
             "front_content": self.front_content,
@@ -184,7 +175,6 @@ class DeckViewer(Base):
     granted_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     granted_by = Column(GUID(), ForeignKey("users.user_id"), nullable=True)
 
-    # Relationships
     deck = relationship("Deck", back_populates="viewers")
     viewer = relationship("User", back_populates="viewed_decks", foreign_keys=[viewer_id])
     granter = relationship("User", foreign_keys=[granted_by])
@@ -209,7 +199,6 @@ class DeckInvitation(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     accepted_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relationships
     deck = relationship("Deck", back_populates="invitations")
     sender = relationship("User", back_populates="sent_invitations", foreign_keys=[sender_id])
 
@@ -234,7 +223,6 @@ class UploadedFile(Base):
     uploaded_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Relationships
     user = relationship("User", back_populates="uploaded_files")
     deck = relationship("Deck", back_populates="files")
 
@@ -259,7 +247,6 @@ class ContentReport(Base):
     reviewed_by = Column(GUID(), ForeignKey("users.user_id"), nullable=True)
     moderator_notes = Column(Text, nullable=True)
 
-    # Relationships
     deck = relationship("Deck", back_populates="reports")
     reporter = relationship("User", back_populates="content_reports", foreign_keys=[reporter_id])
     reviewer = relationship("User", foreign_keys=[reviewed_by])
@@ -282,7 +269,6 @@ class DeckModeration(Base):
     notes = Column(Text, nullable=True)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
-    # Relationships
     deck = relationship("Deck", back_populates="moderation")
     reviewer = relationship("User")
 
@@ -302,7 +288,6 @@ class AuthToken(Base):
     revoked_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
 
-    # Relationships
     user = relationship("User", back_populates="auth_tokens")
 
     __table_args__ = (

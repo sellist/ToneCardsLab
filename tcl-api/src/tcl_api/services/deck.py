@@ -1,22 +1,27 @@
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
-from tcl_api.repository.db.daos import DeckDAO, CardDAO, DeckViewerDAO
-from tcl_api.repository.db.models import Deck
-from tcl_api.models.deck import DeckResponse
-from tcl_api.models.card import CardResponse
+from tcl_api.internal.injectors import get_dao, initialize_dao_factory
+from tcl_api.repository.db.models import Deck, Card, DeckViewer
 
 
+@get_dao(Deck)
+@get_dao(Card)
+@get_dao(DeckViewer)
 class DeckService:
+    # type hints for injected DAOs to help IDE
+    deck_dao: 'DeckDAO'
+    card_dao: 'CardDAO'
+    deckviewer_dao: 'DeckViewerDAO'
+
     def __init__(self, db: Session):
         self.db = db
         self.logger = get_logger("services.deck")
-        self.deck_dao = DeckDAO(db)
-        self.card_dao = CardDAO(db)
-        self.viewer_dao = DeckViewerDAO(db)
+
+        initialize_dao_factory(db)
 
     def _check_deck_exists(self, deck_id: UUID) -> Deck:
         deck = self.deck_dao.get_by_id(deck_id)
@@ -35,7 +40,7 @@ class DeckService:
         if deck.is_public:
             return True
 
-        if self.viewer_dao.is_viewer(deck.deck_id, user_id):
+        if self.deckviewer_dao.is_viewer(deck.deck_id, user_id):
             return True
 
         return False
@@ -44,7 +49,7 @@ class DeckService:
         self,
         deck_id: UUID,
         user_id: Optional[UUID] = None
-    ) -> DeckResponse:
+    ) -> Dict[str, Any]:
         self.logger.debug(f"Retrieving deck {deck_id} for user {user_id}")
 
         deck = self._check_deck_exists(deck_id)
@@ -66,32 +71,11 @@ class DeckService:
             )
 
         cards = self.card_dao.get_by_deck(deck_id)
-        card_responses = [
-            CardResponse(
-                card_id=str(card.card_id),
-                front_content=card.front_content,
-                back_content=card.back_content,
-                front_renderer=card.front_renderer,
-                back_renderer=card.back_renderer
-            )
-            for card in cards
-        ]
-
-        viewer_ids = self.viewer_dao.get_viewer_ids(deck_id)
+        viewer_ids = self.deckviewer_dao.get_viewer_ids(deck_id)
 
         self.logger.info(f"Successfully retrieved deck {deck_id} for user {user_id}")
 
-        return DeckResponse(
-            deck_id=str(deck.deck_id),
-            owner_id=str(deck.owner_id),
-            title=deck.title,
-            description=deck.description,
-            is_public=deck.is_public,
-            cards=card_responses,
-            shared_with=[str(vid) for vid in viewer_ids],
-            created_at=deck.created_at,
-            updated_at=deck.updated_at
-        )
+        return deck.serialize(cards, viewer_ids)
 
     def is_owner(self, deck_id: UUID, user_id: UUID) -> bool:
         deck = self._check_deck_exists(deck_id)
@@ -116,7 +100,7 @@ class DeckService:
         user_id: UUID,
         skip: int = 0,
         limit: int = 100
-    ) -> List[Deck]:
+    ) -> List[Dict[str, Any]]:
         self.logger.debug(f"Retrieving accessible decks for user {user_id}")
 
         owned = self.deck_dao.get_by_owner(user_id, skip=0, limit=limit)
@@ -134,42 +118,73 @@ class DeckService:
             f"Retrieved {len(result)} accessible decks for user {user_id}"
         )
 
-        return result
+        # Convert to deck summaries with card counts
+        deck_summaries = []
+        for deck in result:
+            card_count = self.card_dao.count_by_deck(deck.deck_id) if hasattr(self.card_dao, 'count_by_deck') else 0
+            viewer_count = len(self.deckviewer_dao.get_viewer_ids(deck.deck_id))
+            deck_summaries.append(deck.serialize_summary(card_count, viewer_count))
+
+        return deck_summaries
 
     def get_public_decks(
         self,
         skip: int = 0,
         limit: int = 100
-    ) -> List[Deck]:
+    ) -> List[Dict[str, Any]]:
         self.logger.debug(f"Retrieving public decks")
 
         public_decks = self.deck_dao.get_public_decks(skip=skip, limit=limit)
 
         self.logger.info(f"Retrieved {len(public_decks)} public decks")
-        return public_decks
+
+        # Convert to deck summaries with card counts
+        deck_summaries = []
+        for deck in public_decks:
+            card_count = self.card_dao.count_by_deck(deck.deck_id) if hasattr(self.card_dao, 'count_by_deck') else 0
+            viewer_count = len(self.deckviewer_dao.get_viewer_ids(deck.deck_id))
+            deck_summaries.append(deck.serialize_summary(card_count, viewer_count))
+
+        return deck_summaries
 
     def get_owned_decks(
         self,
         owner_id: UUID,
         skip: int = 0,
         limit: int = 100
-    ) -> List[Deck]:
+    ) -> List[Dict[str, Any]]:
         self.logger.debug(f"Retrieving decks owned by user {owner_id}")
 
         owned_decks = self.deck_dao.get_by_owner(owner_id, skip=skip, limit=limit)
 
         self.logger.info(f"Retrieved {len(owned_decks)} owned decks for user {owner_id}")
-        return owned_decks
+
+        # Convert to deck summaries with card counts
+        deck_summaries = []
+        for deck in owned_decks:
+            card_count = self.card_dao.count_by_deck(deck.deck_id) if hasattr(self.card_dao, 'count_by_deck') else 0
+            viewer_count = len(self.deckviewer_dao.get_viewer_ids(deck.deck_id))
+            deck_summaries.append(deck.serialize_summary(card_count, viewer_count))
+
+        return deck_summaries
 
     def get_premade_decks(
         self,
         skip: int = 0,
         limit: int = 100
-    ) -> List[Deck]:
+    ) -> List[Dict[str, Any]]:
         self.logger.debug(f"Retrieving premade decks")
 
         premade_decks = self.deck_dao.get_premade_decks(skip=skip, limit=limit)
 
         self.logger.info(f"Retrieved {len(premade_decks)} premade decks")
-        return premade_decks
+
+        # Convert to deck summaries with card counts
+        deck_summaries = []
+        for deck in premade_decks:
+            card_count = self.card_dao.count_by_deck(deck.deck_id) if hasattr(self.card_dao, 'count_by_deck') else 0
+            viewer_count = len(self.deckviewer_dao.get_viewer_ids(deck.deck_id))
+            deck_summaries.append(deck.serialize_summary(card_count, viewer_count))
+
+        return deck_summaries
 

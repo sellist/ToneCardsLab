@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from tcl_api.models.base import EntitySerializer
 from tcl_api.repository.db import get_db
 from tcl_api.repository.db.daos import DeckDAO, UserDAO, CardDAO, DeckViewerDAO
+from tcl_api.services.deck import DeckService
 from tcl_api.models.deck import (
     DeckCreate,
     DeckUpdate,
@@ -72,22 +73,9 @@ def create_deck(
 @router.get("/{deck_id}", response_model=ApiResponse[Deck])
 def get_deck(deck_id: UUID, db: Session = Depends(get_db)):
     """Get full deck details including all cards."""
-    deck_dao = DeckDAO(db)
-    card_dao = CardDAO(db)
-    viewer_dao = DeckViewerDAO(db)
+    deck_service = DeckService(db)
 
-    deck = deck_dao.get_by_id(deck_id)
-    if not deck or deck.deleted_at:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Deck not found"
-        )
-
-    # Get cards and viewers
-    cards = card_dao.get_by_deck(deck_id)
-    viewer_ids = viewer_dao.get_viewer_ids(deck_id)
-
-    deck_data = EntitySerializer.serialize_deck(deck, cards, viewer_ids)
+    deck_data = deck_service.get_deck_with_permission(deck_id)
 
     return ApiResponseBuilder.ok().data(deck_data).build()
 
@@ -141,9 +129,7 @@ def list_decks(
 def get_user_decks(user_id: UUID, db: Session = Depends(get_db)):
     """Get user's owned and shared decks for dashboard."""
     user_dao = UserDAO(db)
-    deck_dao = DeckDAO(db)
-    card_dao = CardDAO(db)
-    viewer_dao = DeckViewerDAO(db)
+    deck_service = DeckService(db)
 
     # Verify user exists
     user = user_dao.get_by_id(user_id)
@@ -153,25 +139,16 @@ def get_user_decks(user_id: UUID, db: Session = Depends(get_db)):
             detail="User not found"
         )
 
-    # Get owned decks
-    owned_decks = deck_dao.get_by_owner(user_id, limit=100)
-    owned_summaries = []
-    for deck in owned_decks:
-        card_count = card_dao.count_by_deck(deck.deck_id)
-        viewer_count = len(viewer_dao.get_viewer_ids(deck.deck_id))
-        owned_summaries.append(EntitySerializer.serialize_deck_summary(deck, card_count, viewer_count))
+    # Get owned and accessible decks using service
+    owned_decks = deck_service.get_owned_decks(user_id, limit=100)
+    accessible_decks = deck_service.get_accessible_decks(user_id, limit=100)
 
-    # Get shared decks
-    shared_decks = deck_dao.get_shared_with_user(user_id, limit=100)
-    shared_summaries = []
-    for deck in shared_decks:
-        card_count = card_dao.count_by_deck(deck.deck_id)
-        viewer_count = len(viewer_dao.get_viewer_ids(deck.deck_id))
-        shared_summaries.append(EntitySerializer.serialize_deck_summary(deck, card_count, viewer_count))
+    # Filter out owned decks from accessible to get only shared decks
+    shared_decks = [deck for deck in accessible_decks if deck['owner_id'] != str(user_id)]
 
     dashboard_data = {
-        "owned_decks": owned_summaries,
-        "shared_decks": shared_summaries
+        "owned_decks": owned_decks,
+        "shared_decks": shared_decks
     }
 
     return ApiResponseBuilder.ok().data(dashboard_data).build()
@@ -183,12 +160,10 @@ def update_deck(
     deck_update: DeckUpdate,
     db: Session = Depends(get_db)
 ):
-    """Update deck information."""
     deck_dao = DeckDAO(db)
     card_dao = CardDAO(db)
     viewer_dao = DeckViewerDAO(db)
 
-    # Update deck
     update_dict = deck_update.model_dump(exclude_unset=True, exclude={"cards"})
     deck = deck_dao.update(deck_id, update_dict)
 
@@ -198,7 +173,6 @@ def update_deck(
             detail="Deck not found"
         )
 
-    # Get current cards and viewers
     cards = card_dao.get_by_deck(deck_id)
     viewer_ids = viewer_dao.get_viewer_ids(deck_id)
 
@@ -209,7 +183,6 @@ def update_deck(
 
 @router.delete("/{deck_id}", response_model=ApiResponse)
 def delete_deck(deck_id: UUID, db: Session = Depends(get_db)):
-    """Delete a deck (soft delete)."""
     deck_dao = DeckDAO(db)
 
     deck = deck_dao.soft_delete(deck_id)
@@ -259,7 +232,6 @@ def bulk_delete_decks(
 
 @router.post("/{deck_id}/toggle-public", response_model=ApiResponse[Deck])
 def toggle_public_status(deck_id: UUID, db: Session = Depends(get_db)):
-    """Toggle deck public/private status."""
     deck_dao = DeckDAO(db)
     card_dao = CardDAO(db)
     viewer_dao = DeckViewerDAO(db)
@@ -271,10 +243,8 @@ def toggle_public_status(deck_id: UUID, db: Session = Depends(get_db)):
             detail="Deck not found"
         )
 
-    # Toggle is_public
     deck = deck_dao.update(deck_id, {"is_public": not deck.is_public})
 
-    # Get cards and viewers
     cards = card_dao.get_by_deck(deck_id)
     viewer_ids = viewer_dao.get_viewer_ids(deck_id)
 

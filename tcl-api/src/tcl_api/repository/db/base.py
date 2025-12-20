@@ -45,12 +45,20 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Create a new record.
 
         Args:
-            obj_in: Pydantic model with creation data
+            obj_in: Pydantic model or dict with creation data
 
         Returns:
             Created database model instance
         """
-        obj_data = obj_in.model_dump() if hasattr(obj_in, 'model_dump') else obj_in.dict()
+        if isinstance(obj_in, dict):
+            obj_data = obj_in
+        elif hasattr(obj_in, 'model_dump'):
+            obj_data = obj_in.model_dump()
+        elif hasattr(obj_in, 'dict'):
+            obj_data = obj_in.dict()
+        else:
+            obj_data = obj_in
+
         db_obj = self.model(**obj_data)
         self.db.add(db_obj)
         self.db.commit()
@@ -128,7 +136,7 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         Args:
             id: UUID of the record to update
-            obj_in: Pydantic model with update data
+            obj_in: Pydantic model or dict with update data
 
         Returns:
             Updated model instance or None if not found
@@ -137,7 +145,14 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if not db_obj:
             return None
 
-        obj_data = obj_in.model_dump(exclude_unset=True) if hasattr(obj_in, 'model_dump') else obj_in.dict(exclude_unset=True)
+        if isinstance(obj_in, dict):
+            obj_data = obj_in
+        elif hasattr(obj_in, 'model_dump'):
+            obj_data = obj_in.model_dump(exclude_unset=True)
+        elif hasattr(obj_in, 'dict'):
+            obj_data = obj_in.dict(exclude_unset=True)
+        else:
+            obj_data = obj_in
 
         for field, value in obj_data.items():
             if hasattr(db_obj, field):
@@ -211,15 +226,7 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return result.scalar_one()
 
     def exists(self, id: UUID) -> bool:
-        """
-        Check if a record exists.
 
-        Args:
-            id: UUID of the record
-
-        Returns:
-            True if exists, False otherwise
-        """
         stmt = select(func.count()).select_from(self.model).where(self._get_id_column() == id)
         result = self.db.execute(stmt)
         return result.scalar_one() > 0
@@ -229,14 +236,22 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Create multiple records in bulk.
 
         Args:
-            objects: List of Pydantic models with creation data
+            objects: List of Pydantic models or dicts with creation data
 
         Returns:
             List of created model instances
         """
         db_objects = []
         for obj_in in objects:
-            obj_data = obj_in.model_dump() if hasattr(obj_in, 'model_dump') else obj_in.dict()
+            if isinstance(obj_in, dict):
+                obj_data = obj_in
+            elif hasattr(obj_in, 'model_dump'):
+                obj_data = obj_in.model_dump()
+            elif hasattr(obj_in, 'dict'):
+                obj_data = obj_in.dict()
+            else:
+                obj_data = obj_in
+
             db_obj = self.model(**obj_data)
             db_objects.append(db_obj)
 

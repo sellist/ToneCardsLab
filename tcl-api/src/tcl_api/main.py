@@ -8,6 +8,7 @@ from tcl_api.routers import (
 from tcl_api.middleware import LoggingMiddleware
 from tcl_api.exceptions import setup_exception_handlers
 from tcl_api.internal.musicache import build_music_cache, set_cache
+from tcl_api.repository.db.database import setup_database, DB_TYPE
 from contextlib import asynccontextmanager
 
 setup_logging()
@@ -23,6 +24,13 @@ def create_app() -> FastAPI:
         logger.info(f"Debug mode: {settings.debug}")
         logger.info(f"API prefix: {settings.api_prefix}")
         logger.info(f"CORS origins: {settings.cors_origins}")
+
+        try:
+            logger.info(f"Setting up {DB_TYPE} database...")
+            setup_database()
+            logger.info("Database setup completed")
+        except Exception as e:
+            logger.error(f"Database setup failed: {e}")
 
         music_cache = build_music_cache()
         set_cache(music_cache)

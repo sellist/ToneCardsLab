@@ -41,47 +41,8 @@ class ExportableModel(BaseModel):
 
 
 class EntitySerializer:
-    """Utility class for serializing database entities to dictionaries."""
-
-    @staticmethod
-    def serialize_deck(deck, cards=None, viewers=None) -> Dict[str, Any]:
-        return {
-            "deck_id": str(deck.deck_id),
-            "owner_id": str(deck.owner_id),
-            "title": deck.title,
-            "description": deck.description,
-            "is_public": deck.is_public,
-            "cards": [EntitySerializer.serialize_card(card) for card in cards] if cards else [],
-            "shared_with": [str(vid) for vid in viewers] if viewers else [],
-            "created_at": deck.created_at,
-            "updated_at": deck.updated_at
-        }
-
-    @staticmethod
-    def serialize_card(card) -> Dict[str, Any]:
-        return {
-            "card_id": str(card.card_id),
-            "front_content": card.front_content,
-            "back_content": card.back_content,
-            "front_renderer": card.front_renderer,
-            "back_renderer": card.back_renderer,
-            "created_at": card.created_at,
-            "updated_at": card.updated_at
-        }
-    @staticmethod
-    def serialize_deck_summary(deck, card_count=0, viewer_count=0) -> Dict[str, Any]:
-        """Serialize a deck entity as summary."""
-        return {
-            "deck_id": str(deck.deck_id),
-            "owner_id": str(deck.owner_id),
-            "title": deck.title,
-            "description": deck.description,
-            "is_public": deck.is_public,
-            "card_count": card_count,
-            "shared_with_count": viewer_count,
-            "created_at": deck.created_at,
-            "updated_at": deck.updated_at
-        }
+    """Utility class for backward compatibility. Serialization methods are now on models."""
+    pass
 
 
 

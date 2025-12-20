@@ -1,5 +1,3 @@
-"""API routers for ToneCards Lab."""
-
 from .users import router as users_router
 from .decks import router as decks_router
 from .cards import router as cards_router

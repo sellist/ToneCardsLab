@@ -1,35 +1,28 @@
-"""User-related Pydantic models."""
-
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List
-from .common import TimestampMixin, IdResponse
+from typing import Optional
+from .common import TimestampMixin
 
 
-class UserProfile(BaseModel):
-    """User profile data."""
-    user_id: str = Field(..., description="UUID of the user")
-    email: EmailStr = Field(..., description="User's email address")
-    name: Optional[str] = Field(None, description="User's display name")
-    preferences: Optional[dict] = Field(default_factory=dict, description="User preferences/settings")
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: Optional[str] = None
+    preferences: Optional[dict] = None
 
 
-class UserProfileResponse(UserProfile, TimestampMixin):
-    """User profile response with timestamps."""
-    owned_decks_count: int = Field(default=0, description="Number of decks owned by user")
-    shared_decks_count: int = Field(default=0, description="Number of decks shared with user")
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+    preferences: Optional[dict] = None
 
 
-class UpdateUserProfileRequest(BaseModel):
-    """Request to update user profile."""
-    name: Optional[str] = Field(None, max_length=100, description="Updated display name")
-    preferences: Optional[dict] = Field(None, description="Updated user preferences")
+class UserDeleteConfirm(BaseModel):
+    confirmation: str
 
 
-class DeleteAccountRequest(BaseModel):
-    """Request to delete user account."""
-    confirmation: str = Field(..., description="Confirmation string (e.g., 'DELETE' or user email)")
-    transfer_decks: bool = Field(
-        default=True,
-        description="Whether to transfer owned decks to viewers"
-    )
+class User(TimestampMixin):
+    user_id: str
+    email: str
+    name: Optional[str] = None
+    preferences: dict = Field(default_factory=dict)
+    owned_decks_count: int = 0
+    shared_decks_count: int = 0
 

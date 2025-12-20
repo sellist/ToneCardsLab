@@ -24,7 +24,6 @@ T = TypeVar('T')
 
 
 class ApiResponse(BaseModel, Generic[T]):
-    """Generic API response wrapper for consistent response structure."""
     status: ResponseStatus = Field(..., description="Response status")
     data: Optional[T] = Field(None, description="Response data payload")
     error: Optional[ErrorDetail] = Field(None, description="Error details if status is failure/error")
@@ -94,26 +93,6 @@ class IdResponse(BaseModel):
     id: str = Field(..., description="UUID of the resource")
 
 
-class SuccessResponse(BaseModel):
-    """Simple success response with message."""
-    success: bool = Field(default=True, description="Indicates operation success")
-    message: str = Field(default="Operation completed successfully", description="Success message")
-
-
-class ExistsResponse(BaseModel):
-    """Response for existence validation endpoints."""
-    exists: bool = Field(..., description="Whether the resource exists")
-    is_public: Optional[bool] = Field(None, description="Whether the resource is public (if exists)")
-
-
-class BulkOperationResponse(BaseModel):
-    """Response for bulk operations (delete, update, etc.)."""
-    success_count: int = Field(..., description="Number of successful operations")
-    failure_count: int = Field(..., description="Number of failed operations")
-    failed_ids: List[str] = Field(default_factory=list, description="List of IDs that failed")
-    errors: List[str] = Field(default_factory=list, description="List of error messages")
-
-
 class SearchParams(BaseModel):
     """Common search parameters."""
     query: str = Field(..., min_length=1, description="Search query string")
@@ -121,42 +100,8 @@ class SearchParams(BaseModel):
     page_size: int = Field(default=20, ge=1, le=100, description="Items per page")
 
 
-class FileUploadResponse(BaseModel):
-    """Response for file upload operations."""
-    file_url: str = Field(..., description="URL or path to the uploaded file")
-    file_id: str = Field(..., description="Unique identifier for the file")
-    file_size: int = Field(..., description="File size in bytes")
-    mime_type: str = Field(..., description="MIME type of the file")
-
-
-class HealthStatus(BaseModel):
-    """System health status response."""
-    status: str = Field(..., description="Overall system status (healthy, degraded, unhealthy)")
-    database_connected: bool = Field(..., description="Database connectivity status")
-    cache_connected: bool = Field(..., description="Cache connectivity status")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Health check timestamp")
-    version: Optional[str] = Field(None, description="API version")
-
-
 class ReportRequest(BaseModel):
     """Request model for reporting inappropriate content."""
     deck_id: str = Field(..., description="UUID of the deck being reported")
     reason: str = Field(..., description="Category/reason for the report")
     description: Optional[str] = Field(None, max_length=1000, description="Additional details about the report")
-
-
-class ReportResponse(BaseModel):
-    """Response for content report submission."""
-    report_id: str = Field(..., description="UUID of the created report")
-    status: str = Field(default="pending", description="Initial status of the report")
-    submitted_at: datetime = Field(default_factory=datetime.utcnow, description="Report submission timestamp")
-
-
-class ModerationStatus(BaseModel):
-    """Content moderation status response."""
-    deck_id: str = Field(..., description="UUID of the deck")
-    status: str = Field(..., description="Moderation status (approved, pending, flagged, removed)")
-    reports_count: int = Field(default=0, description="Number of reports received")
-    last_reviewed: Optional[datetime] = Field(None, description="Last moderation review timestamp")
-    notes: Optional[str] = Field(None, description="Moderation notes")
-

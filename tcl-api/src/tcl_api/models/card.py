@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
 
+from tcl_api.models.base import ExportableModel
+
 
 class RendererType(str, Enum):
     """Available content renderer types."""
@@ -15,10 +17,10 @@ class RendererType(str, Enum):
     MERMAID = "mermaid"
 
 
-class CardBase(BaseModel):
+class CardBase(ExportableModel):
     """Base card model with common fields."""
     front_content: str = Field(..., description="Content to display on front of card")
-    back_content: str = Field(..., description="Content to display on back of card")
+    back_content: str = Field(..., description="Content to display on front of card")
     front_renderer: RendererType = Field(
         default=RendererType.STRING,
         description="Renderer type for front content"
@@ -45,11 +47,6 @@ class CardUpdate(BaseModel):
 class Card(CardBase):
     """Full card model with ID."""
     card_id: str = Field(..., description="UUID of the card")
-
-
-class CardResponse(Card):
-    """Card response model."""
-    pass
 
 
 class ReorderCardsRequest(BaseModel):

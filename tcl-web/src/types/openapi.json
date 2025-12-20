@@ -6,20 +6,1928 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/api/v1/health": {
-      "get": {
+    "/api/v1/users/": {
+      "post": {
         "tags": [
-          "health"
+          "users"
         ],
-        "summary": "Health Check",
-        "operationId": "health_check_api_v1_health_get",
+        "summary": "Create User",
+        "description": "Create a new user account.",
+        "operationId": "create_user_api_v1_users__post",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HealthCheckResponse"
+                  "$ref": "#/components/schemas/ApiResponse_UserProfileResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "List Users",
+        "description": "List users with optional search.",
+        "operationId": "list_users_api_v1_users__get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_UserProfileResponse__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get User",
+        "description": "Get user profile by ID.",
+        "operationId": "get_user_api_v1_users__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserProfileResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update User",
+        "description": "Update user profile.",
+        "operationId": "update_user_api_v1_users__user_id__patch",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserProfileResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete User",
+        "description": "Delete user account (soft delete).",
+        "operationId": "delete_user_api_v1_users__user_id__delete",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/email/{email}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get User By Email",
+        "description": "Get user profile by email address.",
+        "operationId": "get_user_by_email_api_v1_users_email__email__get",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserProfileResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decks/": {
+      "post": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Create Deck",
+        "description": "Create a new deck with optional initial cards.",
+        "operationId": "create_deck_api_v1_decks__post",
+        "parameters": [
+          {
+            "name": "owner_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID of deck owner",
+              "title": "Owner Id"
+            },
+            "description": "User ID of deck owner"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeckCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Deck_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "List Decks",
+        "operationId": "list_decks_api_v1_decks__get",
+        "parameters": [
+          {
+            "name": "owner_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Owner Id"
+            }
+          },
+          {
+            "name": "is_public",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Public"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_DeckSummary__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decks/{deck_id}": {
+      "get": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Get Deck",
+        "description": "Get full deck details including all cards.",
+        "operationId": "get_deck_api_v1_decks__deck_id__get",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Deck_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Update Deck",
+        "operationId": "update_deck_api_v1_decks__deck_id__patch",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeckUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Deck_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Delete Deck",
+        "operationId": "delete_deck_api_v1_decks__deck_id__delete",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decks/user/{user_id}/dashboard": {
+      "get": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Get User Decks",
+        "description": "Get user's owned and shared decks for dashboard.",
+        "operationId": "get_user_decks_api_v1_decks_user__user_id__dashboard_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Dict_str__List_DeckSummary___"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decks/bulk-delete": {
+      "post": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Bulk Delete Decks",
+        "description": "Delete multiple decks at once.",
+        "operationId": "bulk_delete_decks_api_v1_decks_bulk_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteDecksRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Dict_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decks/{deck_id}/toggle-public": {
+      "post": {
+        "tags": [
+          "decks"
+        ],
+        "summary": "Toggle Public Status",
+        "operationId": "toggle_public_status_api_v1_decks__deck_id__toggle_public_post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Deck_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards/": {
+      "post": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Create Card",
+        "description": "Create a new card in a deck.",
+        "operationId": "create_card_api_v1_cards__post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Deck ID to add card to",
+              "title": "Deck Id"
+            },
+            "description": "Deck ID to add card to"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Card_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards/{card_id}": {
+      "get": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Get Card",
+        "description": "Get a specific card by ID.",
+        "operationId": "get_card_api_v1_cards__card_id__get",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Card_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Update Card",
+        "operationId": "update_card_api_v1_cards__card_id__patch",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_Card_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Delete Card",
+        "description": "Delete a card from a deck.",
+        "operationId": "delete_card_api_v1_cards__card_id__delete",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards/deck/{deck_id}": {
+      "get": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Get Deck Cards",
+        "description": "Get all cards in a deck, ordered by position.",
+        "operationId": "get_deck_cards_api_v1_cards_deck__deck_id__get",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_Card__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards/deck/{deck_id}/reorder": {
+      "post": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Reorder Cards",
+        "description": "Reorder cards in a deck.",
+        "operationId": "reorder_cards_api_v1_cards_deck__deck_id__reorder_post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderCardsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards/deck/{deck_id}/bulk-create": {
+      "post": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Bulk Create Cards",
+        "operationId": "bulk_create_cards_api_v1_cards_deck__deck_id__bulk_create_post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CardCreate"
+                },
+                "title": "Cards Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_Card__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cards/deck/{deck_id}/all": {
+      "delete": {
+        "tags": [
+          "cards"
+        ],
+        "summary": "Delete All Cards In Deck",
+        "operationId": "delete_all_cards_in_deck_api_v1_cards_deck__deck_id__all_delete",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sharing/decks/{deck_id}/viewers": {
+      "get": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Get Deck Viewers",
+        "description": "Get list of users who have viewer access to a deck.",
+        "operationId": "get_deck_viewers_api_v1_sharing_decks__deck_id__viewers_get",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ViewersResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Edit Deck Viewers",
+        "description": "Add or remove viewers from a deck.",
+        "operationId": "edit_deck_viewers_api_v1_sharing_decks__deck_id__viewers_post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          },
+          {
+            "name": "owner_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Owner Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditViewersRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ViewersResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sharing/decks/{deck_id}/share-by-email": {
+      "post": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Share Deck By Email",
+        "description": "Send an email invitation to share a deck.",
+        "operationId": "share_deck_by_email_api_v1_sharing_decks__deck_id__share_by_email_post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          },
+          {
+            "name": "sender_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Sender Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareByEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ShareByEmailResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sharing/invitations/{invitation_id}": {
+      "get": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Get Invitation",
+        "description": "Get invitation details.",
+        "operationId": "get_invitation_api_v1_sharing_invitations__invitation_id__get",
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ShareByEmailResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Revoke Invitation",
+        "description": "Revoke a pending invitation.",
+        "operationId": "revoke_invitation_api_v1_sharing_invitations__invitation_id__delete",
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sharing/invitations/{invitation_id}/accept": {
+      "post": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Accept Invitation",
+        "description": "Accept a deck sharing invitation.",
+        "operationId": "accept_invitation_api_v1_sharing_invitations__invitation_id__accept_post",
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Invitation Id"
+            }
+          },
+          {
+            "name": "user_email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sharing/invitations/email/{email}": {
+      "get": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Get User Invitations",
+        "description": "Get pending invitations for a user's email.",
+        "operationId": "get_user_invitations_api_v1_sharing_invitations_email__email__get",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_ShareByEmailResponse__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sharing/decks/{deck_id}/viewers/{viewer_id}/remove": {
+      "post": {
+        "tags": [
+          "sharing"
+        ],
+        "summary": "Remove Viewer",
+        "description": "Remove a viewer from a deck.",
+        "operationId": "remove_viewer_api_v1_sharing_decks__deck_id__viewers__viewer_id__remove_post",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          },
+          {
+            "name": "viewer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Viewer Id"
+            }
+          },
+          {
+            "name": "owner_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Owner Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/upload": {
+      "post": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Upload File",
+        "description": "Upload a file and store metadata.",
+        "operationId": "upload_file_api_v1_files_upload_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID uploading the file",
+              "title": "User Id"
+            },
+            "description": "User ID uploading the file"
+          },
+          {
+            "name": "deck_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Optional deck ID to associate",
+              "title": "Deck Id"
+            },
+            "description": "Optional deck ID to associate"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_api_v1_files_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UploadedFile_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{file_id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Get File",
+        "description": "Get file metadata by ID.",
+        "operationId": "get_file_api_v1_files__file_id__get",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UploadedFile_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Delete File",
+        "description": "Delete a file (soft delete).",
+        "operationId": "delete_file_api_v1_files__file_id__delete",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/user/{user_id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Get User Files",
+        "description": "Get all files uploaded by a user.",
+        "operationId": "get_user_files_api_v1_files_user__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserFilesResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/deck/{deck_id}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Get Deck Files",
+        "description": "Get all files associated with a deck.",
+        "operationId": "get_deck_files_api_v1_files_deck__deck_id__get",
+        "parameters": [
+          {
+            "name": "deck_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Deck Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_UploadedFile__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{file_id}/permanent": {
+      "delete": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Permanently Delete File",
+        "description": "Permanently delete a file from database and storage.",
+        "operationId": "permanently_delete_file_api_v1_files__file_id__permanent_delete",
+        "parameters": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "File Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/bulk-upload": {
+      "post": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Bulk Upload Files",
+        "description": "Upload multiple files at once.",
+        "operationId": "bulk_upload_files_api_v1_files_bulk_upload_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "User ID uploading files",
+              "title": "User Id"
+            },
+            "description": "User ID uploading files"
+          },
+          {
+            "name": "deck_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Optional deck ID to associate",
+              "title": "Deck Id"
+            },
+            "description": "Optional deck ID to associate"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_bulk_upload_files_api_v1_files_bulk_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_List_UploadedFile__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -46,28 +1954,1675 @@
   },
   "components": {
     "schemas": {
-      "HealthCheckResponse": {
+      "ApiResponse": {
         "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "version": {
-            "type": "string",
-            "title": "Version"
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
           },
           "message": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Message",
-            "default": "Service is running"
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse"
+      },
+      "ApiResponse_Card_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Card"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[Card]"
+      },
+      "ApiResponse_Deck_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Deck"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[Deck]"
+      },
+      "ApiResponse_Dict_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[Dict]"
+      },
+      "ApiResponse_Dict_str__List_DeckSummary___": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeckSummary"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[Dict[str, List[DeckSummary]]]"
+      },
+      "ApiResponse_List_Card__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Card"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[List[Card]]"
+      },
+      "ApiResponse_List_DeckSummary__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DeckSummary"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[List[DeckSummary]]"
+      },
+      "ApiResponse_List_ShareByEmailResponse__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ShareByEmailResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[List[ShareByEmailResponse]]"
+      },
+      "ApiResponse_List_UploadedFile__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/UploadedFile"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[List[UploadedFile]]"
+      },
+      "ApiResponse_List_UserProfileResponse__": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[List[UserProfileResponse]]"
+      },
+      "ApiResponse_ShareByEmailResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShareByEmailResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[ShareByEmailResponse]"
+      },
+      "ApiResponse_UploadedFile_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UploadedFile"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[UploadedFile]"
+      },
+      "ApiResponse_UserFilesResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserFilesResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[UserFilesResponse]"
+      },
+      "ApiResponse_UserProfileResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserProfileResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[UserProfileResponse]"
+      },
+      "ApiResponse_ViewersResponse_": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Indicates if the request was successful",
+            "default": true
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Response message or error description"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ViewersResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response payload"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata",
+            "description": "Response metadata"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errors",
+            "description": "Error details if any"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[ViewersResponse]"
+      },
+      "Body_bulk_upload_files_api_v1_files_bulk_upload_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "type": "array",
+            "title": "Files"
           }
         },
         "type": "object",
         "required": [
-          "status",
-          "version"
+          "files"
         ],
-        "title": "HealthCheckResponse"
+        "title": "Body_bulk_upload_files_api_v1_files_bulk_upload_post"
+      },
+      "Body_upload_file_api_v1_files_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_file_api_v1_files_upload_post"
+      },
+      "BulkDeleteDecksRequest": {
+        "properties": {
+          "deck_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Deck Ids",
+            "description": "List of deck IDs to delete"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deck_ids"
+        ],
+        "title": "BulkDeleteDecksRequest",
+        "description": "Request to delete multiple decks."
+      },
+      "Card": {
+        "properties": {
+          "front_content": {
+            "type": "string",
+            "title": "Front Content",
+            "description": "Content to display on front of card"
+          },
+          "back_content": {
+            "type": "string",
+            "title": "Back Content",
+            "description": "Content to display on front of card"
+          },
+          "front_renderer": {
+            "$ref": "#/components/schemas/RendererType",
+            "description": "Renderer type for front content",
+            "default": "string"
+          },
+          "back_renderer": {
+            "$ref": "#/components/schemas/RendererType",
+            "description": "Renderer type for back content",
+            "default": "string"
+          },
+          "card_id": {
+            "type": "string",
+            "title": "Card Id",
+            "description": "UUID of the card"
+          }
+        },
+        "type": "object",
+        "required": [
+          "front_content",
+          "back_content",
+          "card_id"
+        ],
+        "title": "Card",
+        "description": "Full card model with ID."
+      },
+      "CardCreate": {
+        "properties": {
+          "front_content": {
+            "type": "string",
+            "title": "Front Content",
+            "description": "Content to display on front of card"
+          },
+          "back_content": {
+            "type": "string",
+            "title": "Back Content",
+            "description": "Content to display on front of card"
+          },
+          "front_renderer": {
+            "$ref": "#/components/schemas/RendererType",
+            "description": "Renderer type for front content",
+            "default": "string"
+          },
+          "back_renderer": {
+            "$ref": "#/components/schemas/RendererType",
+            "description": "Renderer type for back content",
+            "default": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "front_content",
+          "back_content"
+        ],
+        "title": "CardCreate",
+        "description": "Request to create a new card."
+      },
+      "CardUpdate": {
+        "properties": {
+          "front_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Front Content",
+            "description": "Updated front content"
+          },
+          "back_content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Back Content",
+            "description": "Updated back content"
+          },
+          "front_renderer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RendererType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Updated front renderer"
+          },
+          "back_renderer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RendererType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Updated back renderer"
+          }
+        },
+        "type": "object",
+        "title": "CardUpdate",
+        "description": "Request to update an existing card."
+      },
+      "Deck": {
+        "properties": {
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id",
+            "description": "UUID of the user who owns this resource"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public",
+            "description": "Whether this resource is publicly accessible",
+            "default": false
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Deck title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Deck description"
+          },
+          "deck_id": {
+            "type": "string",
+            "title": "Deck Id",
+            "description": "UUID of the deck"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
+            "type": "array",
+            "title": "Cards",
+            "description": "All cards in the deck"
+          },
+          "shared_with": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Shared With",
+            "description": "List of user IDs with viewer access"
+          }
+        },
+        "type": "object",
+        "required": [
+          "owner_id",
+          "title",
+          "deck_id"
+        ],
+        "title": "Deck",
+        "description": "Full deck model including all cards."
+      },
+      "DeckCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Deck title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Deck description"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
+            "type": "array",
+            "title": "Cards",
+            "description": "Initial cards for the deck"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public",
+            "description": "Whether deck is publicly accessible",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "DeckCreate",
+        "description": "Request to create a new deck."
+      },
+      "DeckSummary": {
+        "properties": {
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id",
+            "description": "UUID of the user who owns this resource"
+          },
+          "is_public": {
+            "type": "boolean",
+            "title": "Is Public",
+            "description": "Whether this resource is publicly accessible",
+            "default": false
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Deck title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Deck description"
+          },
+          "deck_id": {
+            "type": "string",
+            "title": "Deck Id",
+            "description": "UUID of the deck"
+          },
+          "card_count": {
+            "type": "integer",
+            "title": "Card Count",
+            "description": "Number of cards in the deck"
+          },
+          "shared_with_count": {
+            "type": "integer",
+            "title": "Shared With Count",
+            "description": "Number of users with viewer access",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "owner_id",
+          "title",
+          "deck_id",
+          "card_count"
+        ],
+        "title": "DeckSummary",
+        "description": "Summary view of a deck (for list endpoints)."
+      },
+      "DeckUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Updated title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Updated description"
+          },
+          "cards": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Card"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cards",
+            "description": "Updated cards list"
+          }
+        },
+        "type": "object",
+        "title": "DeckUpdate",
+        "description": "Request to update an existing deck."
+      },
+      "DeleteAccountRequest": {
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "title": "Confirmation",
+            "description": "Confirmation string (e.g., 'DELETE' or user email)"
+          },
+          "transfer_decks": {
+            "type": "boolean",
+            "title": "Transfer Decks",
+            "description": "Whether to transfer owned decks to viewers",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirmation"
+        ],
+        "title": "DeleteAccountRequest",
+        "description": "Request to delete user account."
+      },
+      "EditViewersRequest": {
+        "properties": {
+          "add_viewer_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Add Viewer Ids",
+            "description": "User IDs to add as viewers"
+          },
+          "remove_viewer_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Remove Viewer Ids",
+            "description": "User IDs to remove from viewers"
+          }
+        },
+        "type": "object",
+        "title": "EditViewersRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Metadata": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Response timestamp"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id",
+            "description": "Unique request identifier"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "API version",
+            "default": "1.0"
+          },
+          "total_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Count",
+            "description": "Total number of items (for paginated responses)"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page",
+            "description": "Current page number"
+          },
+          "page_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Size",
+            "description": "Number of items per page"
+          },
+          "execution_time_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Time Ms",
+            "description": "Request execution time in milliseconds"
+          }
+        },
+        "type": "object",
+        "title": "Metadata"
+      },
+      "RendererType": {
+        "type": "string",
+        "enum": [
+          "string",
+          "markdown",
+          "abc_js",
+          "image",
+          "latex",
+          "mermaid"
+        ],
+        "title": "RendererType",
+        "description": "Available content renderer types."
+      },
+      "ReorderCardsRequest": {
+        "properties": {
+          "card_order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Card Order",
+            "description": "Ordered list of card IDs representing new order"
+          }
+        },
+        "type": "object",
+        "required": [
+          "card_order"
+        ],
+        "title": "ReorderCardsRequest",
+        "description": "Request to reorder cards in a deck."
+      },
+      "ShareByEmailRequest": {
+        "properties": {
+          "recipient_email": {
+            "type": "string",
+            "format": "email",
+            "title": "Recipient Email",
+            "description": "Email address of recipient"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Optional invitation message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient_email"
+        ],
+        "title": "ShareByEmailRequest"
+      },
+      "ShareByEmailResponse": {
+        "properties": {
+          "invitation_id": {
+            "type": "string",
+            "title": "Invitation Id",
+            "description": "UUID of the invitation"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Status of the invitation",
+            "default": "sent"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At",
+            "description": "ISO 8601 timestamp when invitation expires"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invitation_id"
+        ],
+        "title": "ShareByEmailResponse"
+      },
+      "UpdateUserProfileRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Updated display name"
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preferences",
+            "description": "Updated user preferences"
+          }
+        },
+        "type": "object",
+        "title": "UpdateUserProfileRequest",
+        "description": "Request to update user profile."
+      },
+      "UploadedFile": {
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "title": "File Id",
+            "description": "UUID of the file"
+          },
+          "file_url": {
+            "type": "string",
+            "title": "File Url",
+            "description": "URL to access the file"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name",
+            "description": "Original filename"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size",
+            "description": "File size in bytes"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type",
+            "description": "MIME type"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At",
+            "description": "Upload timestamp"
+          },
+          "deck_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deck Id",
+            "description": "Associated deck ID if applicable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_id",
+          "file_url",
+          "file_name",
+          "file_size",
+          "mime_type",
+          "uploaded_at"
+        ],
+        "title": "UploadedFile",
+        "description": "Uploaded file metadata."
+      },
+      "UserFilesResponse": {
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/UploadedFile"
+            },
+            "type": "array",
+            "title": "Files",
+            "description": "List of uploaded files"
+          },
+          "total_size": {
+            "type": "integer",
+            "title": "Total Size",
+            "description": "Total size of all files in bytes"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count",
+            "description": "Total number of files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_size",
+          "total_count"
+        ],
+        "title": "UserFilesResponse",
+        "description": "Response with list of user's uploaded files."
+      },
+      "UserProfileResponse": {
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Timestamp when resource was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Timestamp when resource was last updated"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "UUID of the user"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "User's email address"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "User's display name"
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preferences",
+            "description": "User preferences/settings"
+          },
+          "owned_decks_count": {
+            "type": "integer",
+            "title": "Owned Decks Count",
+            "description": "Number of decks owned by user",
+            "default": 0
+          },
+          "shared_decks_count": {
+            "type": "integer",
+            "title": "Shared Decks Count",
+            "description": "Number of decks shared with user",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "created_at",
+          "updated_at",
+          "user_id",
+          "email"
+        ],
+        "title": "UserProfileResponse",
+        "description": "User profile response with timestamps."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ViewersResponse": {
+        "properties": {
+          "deck_id": {
+            "type": "string",
+            "title": "Deck Id",
+            "description": "UUID of the deck"
+          },
+          "viewer_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Viewer Ids",
+            "description": "List of user IDs with viewer access"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deck_id"
+        ],
+        "title": "ViewersResponse"
       }
     }
   }

@@ -1,4 +1,4 @@
-from .health import HealthData
+from .health import HealthResponse
 from .response import ApiResponse, ErrorResponse, PaginatedResponse, Metadata
 
 # Common models
@@ -12,18 +12,10 @@ from .common import (
     TimestampMixin,
     OwnershipMixin,
     IdResponse,
-    SuccessResponse,
-    ExistsResponse,
-    BulkOperationResponse,
     SearchParams,
-    FileUploadResponse,
-    HealthStatus,
     ReportRequest,
-    ReportResponse,
-    ModerationStatus
 )
 
-# Auth models
 from .auth import (
     LoginRequest,
     LoginResponse,
@@ -31,36 +23,28 @@ from .auth import (
     LogoutRequest
 )
 
-# User models
 from .user import (
-    UserProfile,
-    UserProfileResponse,
-    UpdateUserProfileRequest,
-    DeleteAccountRequest
+    User,
+    UserCreate,
+    UserUpdate,
+    UserDeleteConfirm
 )
 
-# Card models
 from .card import (
     RendererType,
     CardBase,
     CardCreate,
     CardUpdate,
     Card,
-    CardResponse,
     ReorderCardsRequest
 )
 
-# Deck models
 from .deck import (
     DeckBase,
     DeckCreate,
     DeckUpdate,
     DeckSummary,
-    DeckSummaryResponse,
     Deck,
-    DeckResponse,
-    DeckListResponse,
-    DeckStatistics,
     DeckExportFormat,
     DeckExportRequest,
     DeckImportRequest,
@@ -68,7 +52,6 @@ from .deck import (
     TogglePublicStatusRequest
 )
 
-# Sharing models
 from .sharing import (
     ViewersResponse,
     EditViewersRequest,
@@ -76,7 +59,6 @@ from .sharing import (
     ShareByEmailResponse
 )
 
-# File models
 from .file import (
     UploadFileRequest,
     UploadedFile,
@@ -85,14 +67,12 @@ from .file import (
 )
 
 __all__ = [
-    # Legacy models
-    "HealthData",
+    "HealthResponse",
     "ApiResponse",
     "ErrorResponse",
     "PaginatedResponse",
     "Metadata",
 
-    # Common models
     "ResponseStatus",
     "ErrorDetail",
     "CommonApiResponse",
@@ -102,27 +82,18 @@ __all__ = [
     "TimestampMixin",
     "OwnershipMixin",
     "IdResponse",
-    "SuccessResponse",
-    "ExistsResponse",
-    "BulkOperationResponse",
     "SearchParams",
-    "FileUploadResponse",
-    "HealthStatus",
     "ReportRequest",
-    "ReportResponse",
-    "ModerationStatus",
 
-    # Auth models
     "LoginRequest",
     "LoginResponse",
     "RefreshTokenRequest",
     "LogoutRequest",
 
-    # User models
-    "UserProfile",
-    "UserProfileResponse",
-    "UpdateUserProfileRequest",
-    "DeleteAccountRequest",
+    "User",
+    "UserCreate",
+    "UserUpdate",
+    "UserDeleteConfirm",
 
     # Card models
     "RendererType",
@@ -130,7 +101,6 @@ __all__ = [
     "CardCreate",
     "CardUpdate",
     "Card",
-    "CardResponse",
     "ReorderCardsRequest",
 
     # Deck models
@@ -138,11 +108,7 @@ __all__ = [
     "DeckCreate",
     "DeckUpdate",
     "DeckSummary",
-    "DeckSummaryResponse",
     "Deck",
-    "DeckResponse",
-    "DeckListResponse",
-    "DeckStatistics",
     "DeckExportFormat",
     "DeckExportRequest",
     "DeckImportRequest",

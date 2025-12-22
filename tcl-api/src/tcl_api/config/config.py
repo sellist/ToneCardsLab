@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Literal
 
 
 class Settings(BaseSettings):
@@ -10,6 +11,11 @@ class Settings(BaseSettings):
 
     host: str = "0.0.0.0"
     port: int = 8000
+
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    log_to_file: bool = True
+    log_to_console: bool = True
+    log_format: Literal["default", "detailed", "json"] = "default"
 
     model_config = SettingsConfigDict(
         env_file=".env",

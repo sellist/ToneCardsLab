@@ -28,6 +28,17 @@ def get_logging_config() -> Dict[str, Any]:
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
+    log_level = "DEBUG" if settings.debug else settings.log_level
+
+    handlers = []
+    if settings.log_to_console:
+        handlers.append("console")
+    if settings.log_to_file:
+        handlers.extend(["file", "error_file"])
+
+    if not handlers:
+        handlers = ["console"]
+
     config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -50,13 +61,13 @@ def get_logging_config() -> Dict[str, Any]:
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
-                "level": "INFO",
-                "formatter": "default",
+                "level": log_level,
+                "formatter": settings.log_format,
                 "stream": sys.stdout
             },
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
-                "level": "INFO",
+                "level": log_level,
                 "formatter": "detailed",
                 "filename": "logs/tcl-api.log",
                 "maxBytes": 10485760,
@@ -75,41 +86,36 @@ def get_logging_config() -> Dict[str, Any]:
         },
         "loggers": {
             "tcl_api": {
-                "level": "DEBUG" if settings.debug else "INFO",
-                "handlers": ["console", "file", "error_file"],
+                "level": log_level,
+                "handlers": handlers,
                 "propagate": False
             },
             "uvicorn": {
                 "level": "INFO",
-                "handlers": ["console", "file"],
+                "handlers": handlers,
                 "propagate": False
             },
             "uvicorn.error": {
                 "level": "INFO",
-                "handlers": ["console", "file", "error_file"],
+                "handlers": handlers,
                 "propagate": False
             },
             "uvicorn.access": {
                 "level": "INFO",
-                "handlers": ["console", "file"],
+                "handlers": handlers,
                 "propagate": False
             },
             "fastapi": {
                 "level": "INFO",
-                "handlers": ["console", "file"],
+                "handlers": handlers,
                 "propagate": False
             }
         },
         "root": {
-            "level": "INFO",
-            "handlers": ["console", "file"]
+            "level": log_level,
+            "handlers": handlers
         }
     }
-
-    if settings.debug:
-        config["handlers"]["console"]["level"] = "DEBUG"
-        config["loggers"]["tcl_api"]["level"] = "DEBUG"
-        config["root"]["level"] = "DEBUG"
 
     return config
 
@@ -121,7 +127,9 @@ def setup_logging() -> None:
     logger = logging.getLogger("tcl_api")
     logger.info("Logging system initialized")
     logger.info(f"Debug mode: {settings.debug}")
-    logger.info(f"Log level: {'DEBUG' if settings.debug else 'INFO'}")
+    logger.info(f"Log level: {settings.log_level}")
+    logger.info(f"Log to file: {settings.log_to_file}")
+    logger.info(f"Log to console: {settings.log_to_console}")
 
 
 def get_logger(name: str) -> logging.Logger:

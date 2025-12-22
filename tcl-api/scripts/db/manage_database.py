@@ -190,8 +190,7 @@ class DatabaseManager:
                 # Create sample user
                 sample_user = User(
                     email="test@example.com",
-                    name="Test User",
-                    preferences={"theme": "dark", "language": "en"}
+                    name="Test User"
                 )
                 db.add(sample_user)
                 db.flush()  # Get the user_id

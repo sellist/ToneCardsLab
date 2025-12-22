@@ -45,8 +45,7 @@ def update_user(
     user_service = UserService(db)
     updated_user_data = user_service.update_user(
         user_id=user_id,
-        name=update_data.name,
-        preferences=update_data.preferences
+        name=update_data.name
     )
     return ApiResponseBuilder.ok().data(updated_user_data).build()
 

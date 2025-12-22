@@ -120,6 +120,18 @@ class User(SQLModel, table=True):
     )
     auth_tokens: List["AuthToken"] = Relationship(back_populates="user")
 
+    def serialize(self, owned_decks_count: int = 0, shared_decks_count: int = 0) -> Dict[str, Any]:
+        """Serialize User for API response."""
+        return {
+            "user_id": str(self.user_id),
+            "email": self.email,
+            "name": self.name,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "owned_decks_count": owned_decks_count,
+            "shared_decks_count": shared_decks_count,
+        }
+
 
 class Deck(SQLModel, table=True):
     """Flashcard deck - both database table and API model."""
@@ -195,6 +207,23 @@ class Deck(SQLModel, table=True):
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
     )
 
+    def serialize(self, cards: Optional[List["Card"]] = None, viewer_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Serialize Deck for API response."""
+        card_list = cards or []
+        viewer_list = viewer_ids or []
+        return {
+            "deck_id": str(self.deck_id),
+            "owner_id": str(self.owner_id),
+            "title": self.title,
+            "description": self.description,
+            "is_public": self.is_public,
+            "cards": [card.serialize() for card in card_list],
+            "shared_with": viewer_list,
+            "card_count": len(card_list),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
 
 class Card(SQLModel, table=True):
     """Flashcard within a deck - both database table and API model."""
@@ -249,6 +278,19 @@ class Card(SQLModel, table=True):
     __table_args__ = (
         UniqueConstraint('deck_id', 'position', name='idx_cards_unique_position'),
     )
+
+    def serialize(self) -> Dict[str, Any]:
+        """Serialize Card for API response."""
+        return {
+            "card_id": str(self.card_id),
+            "front_content": self.front_content,
+            "back_content": self.back_content,
+            "front_renderer": self.front_renderer.value if isinstance(self.front_renderer, RendererType) else self.front_renderer,
+            "back_renderer": self.back_renderer.value if isinstance(self.back_renderer, RendererType) else self.back_renderer,
+            "position": self.position,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
 
 
 class DeckViewer(SQLModel, table=True):
@@ -343,6 +385,20 @@ class DeckInvitation(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "[DeckInvitation.sender_id]"}
     )
 
+    def serialize(self) -> Dict[str, Any]:
+        """Serialize DeckInvitation for API response."""
+        return {
+            "invitation_id": str(self.invitation_id),
+            "deck_id": str(self.deck_id),
+            "sender_id": str(self.sender_id),
+            "recipient_email": self.recipient_email,
+            "message": self.message,
+            "status": self.status,
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "accepted_at": self.accepted_at.isoformat() if self.accepted_at else None,
+        }
+
 
 class UploadedFile(SQLModel, table=True):
     """User uploaded file metadata - database table."""
@@ -395,6 +451,18 @@ class UploadedFile(SQLModel, table=True):
     # Relationships
     user: Optional["User"] = Relationship(back_populates="uploaded_files")
     deck: Optional["Deck"] = Relationship(back_populates="files")
+
+    def serialize(self) -> Dict[str, Any]:
+        """Serialize UploadedFile for API response."""
+        return {
+            "file_id": str(self.file_id),
+            "file_url": self.file_url,
+            "file_name": self.file_name,
+            "file_size": self.file_size,
+            "mime_type": self.mime_type,
+            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None,
+            "deck_id": str(self.deck_id) if self.deck_id else None,
+        }
 
 
 class ContentReport(SQLModel, table=True):

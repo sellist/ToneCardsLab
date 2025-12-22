@@ -16,7 +16,7 @@ from tcl_api.models.deck import (
     DeckSummary
 )
 from tcl_api.models.builders import ApiResponseBuilder
-from tcl_api.models.response import ApiResponse
+from tcl_api.models.common import ApiResponse
 
 router = APIRouter(prefix="/decks", tags=["decks"])
 

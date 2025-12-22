@@ -19,7 +19,7 @@ def create_user(
 ):
     user_service = UserService(db)
     user = user_service.create_user(email=create_data.email, name=create_data.name)
-    return ApiResponseBuilder.created().data(user.serialize(0, 0)).build()
+    return ApiResponseBuilder.created().data(user.serialize(owned_decks_count=0, shared_decks_count=0)).build()
 
 
 @router.get("/{user_id}", response_model=ApiResponse[User])

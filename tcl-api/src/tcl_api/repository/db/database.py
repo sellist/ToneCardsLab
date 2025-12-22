@@ -1,17 +1,14 @@
 """Database session management and configuration."""
 
-import os
 import logging
 from urllib.parse import urlparse
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
-from sqlalchemy.pool import NullPool
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import sessionmaker, Session
+from sqlmodel import SQLModel
 from typing import Generator
 from contextlib import contextmanager
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-Base = declarative_base()
 logger = logging.getLogger(__name__)
 
 
@@ -102,11 +99,11 @@ def get_db_context() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    Base.metadata.create_all(bind=engine)
+    SQLModel.metadata.create_all(bind=engine)
 
 
 def drop_db() -> None:
-    Base.metadata.drop_all(bind=engine)
+    SQLModel.metadata.drop_all(bind=engine)
 
 
 def create_database_if_not_exists() -> bool:

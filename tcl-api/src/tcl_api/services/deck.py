@@ -12,7 +12,6 @@ from tcl_api.repository.db.models import Deck, Card, DeckViewer
 @get_dao(Card)
 @get_dao(DeckViewer)
 class DeckService:
-    # type hints for injected DAOs to help IDE
     deck_dao: 'DeckDAO'
     card_dao: 'CardDAO'
     deckviewer_dao: 'DeckViewerDAO'
@@ -62,9 +61,6 @@ class DeckService:
             )
 
         if not deck.is_public and not self._has_permission(deck, user_id):
-            self.logger.warning(
-                f"User {user_id} denied access to deck {deck_id}"
-            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to access this deck"
@@ -118,7 +114,6 @@ class DeckService:
             f"Retrieved {len(result)} accessible decks for user {user_id}"
         )
 
-        # Convert to deck summaries with card counts
         deck_summaries = []
         for deck in result:
             card_count = self.card_dao.count_by_deck(deck.deck_id) if hasattr(self.card_dao, 'count_by_deck') else 0

@@ -193,9 +193,6 @@ class SharingService:
             )
 
         if invitation.recipient_email != user_email:
-            self.logger.warning(
-                f"Email mismatch for invitation {invitation_id}: {user_email} vs {invitation.recipient_email}"
-            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Invitation not for this user"
@@ -252,8 +249,6 @@ class SharingService:
             }
             for inv in invitations
         ]
-
-        self.logger.info(f"Retrieved {len(invitations_data)} pending invitations for {email}")
 
         return invitations_data
 

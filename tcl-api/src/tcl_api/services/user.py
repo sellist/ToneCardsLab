@@ -42,13 +42,9 @@ class UserService:
     def create_user(
         self,
         email: str,
-        name: Optional[str] = None,
-        preferences: Optional[Dict[str, Any]] = None
+        name: Optional[str] = None
     ) -> User:
-        self.logger.debug(f"Creating user with email: {email}")
-
         if self._check_email_exists(email):
-            self.logger.warning(f"User already exists with email: {email}")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User with this email already exists"
@@ -56,8 +52,7 @@ class UserService:
 
         user_data = {
             "email": email,
-            "name": name,
-            "preferences": preferences or {}
+            "name": name
         }
         user = self.user_dao.create(user_data)
 
@@ -83,7 +78,6 @@ class UserService:
 
         user = self.user_dao.get_by_email(email)
         if not user or user.deleted_at:
-            self.logger.warning(f"User not found by email: {email}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
@@ -101,8 +95,7 @@ class UserService:
     def update_user(
         self,
         user_id: UUID,
-        name: Optional[str] = None,
-        preferences: Optional[Dict[str, Any]] = None
+        name: Optional[str] = None
     ) -> Dict[str, Any]:
         self.logger.debug(f"Updating user: {user_id}")
 
@@ -111,11 +104,8 @@ class UserService:
         update_data = {}
         if name is not None:
             update_data["name"] = name
-        if preferences is not None:
-            update_data["preferences"] = preferences
 
         if not update_data:
-            self.logger.warning(f"No data to update for user: {user_id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No fields to update"

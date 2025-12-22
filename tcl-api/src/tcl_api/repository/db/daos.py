@@ -2,12 +2,17 @@
 
 from typing import Optional, List
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_, or_
 
 from .base import BaseDAO
 from .models import User, Deck, Card, DeckViewer, DeckInvitation, UploadedFile, ContentReport
+
+
+def utcnow() -> datetime:
+    """Return timezone-aware UTC datetime."""
+    return datetime.now(timezone.utc)
 
 
 class UserDAO(BaseDAO[User, dict, dict]):
@@ -236,7 +241,7 @@ class DeckInvitationDAO(BaseDAO[DeckInvitation, dict, dict]):
             select(DeckInvitation)
             .where(DeckInvitation.recipient_email == recipient_email)
             .where(DeckInvitation.status == "sent")
-            .where(DeckInvitation.expires_at > datetime.utcnow())
+            .where(DeckInvitation.expires_at > utcnow())
         )
         result = self.db.execute(stmt)
         return list(result.scalars().all())
@@ -246,7 +251,7 @@ class DeckInvitationDAO(BaseDAO[DeckInvitation, dict, dict]):
         invitation = self.get_by_id(invitation_id)
         if invitation and invitation.status == "sent":
             invitation.status = "accepted"
-            invitation.accepted_at = datetime.utcnow()
+            invitation.accepted_at = utcnow()
             self.db.commit()
             self.db.refresh(invitation)
         return invitation
@@ -256,7 +261,7 @@ class DeckInvitationDAO(BaseDAO[DeckInvitation, dict, dict]):
         stmt = (
             select(DeckInvitation)
             .where(DeckInvitation.status == "sent")
-            .where(DeckInvitation.expires_at <= datetime.utcnow())
+            .where(DeckInvitation.expires_at <= utcnow())
         )
         result = self.db.execute(stmt)
         invitations = list(result.scalars().all())
@@ -342,7 +347,7 @@ class ContentReportDAO(BaseDAO[ContentReport, dict, dict]):
         report = self.get_by_id(report_id)
         if report:
             report.status = status
-            report.reviewed_at = datetime.utcnow()
+            report.reviewed_at = utcnow()
             report.reviewed_by = reviewed_by
             if notes:
                 report.moderator_notes = notes

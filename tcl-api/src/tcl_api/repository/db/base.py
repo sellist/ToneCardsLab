@@ -2,12 +2,18 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Type, Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update, delete, func
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
-from .database import Base
+from sqlmodel import SQLModel
 
-ModelType = TypeVar("ModelType", bound=Base)
+
+def utcnow() -> datetime:
+    """Return timezone-aware UTC datetime."""
+    return datetime.now(timezone.utc)
+
+
+ModelType = TypeVar("ModelType", bound=SQLModel)
 CreateSchemaType = TypeVar("CreateSchemaType")
 UpdateSchemaType = TypeVar("UpdateSchemaType")
 
@@ -94,7 +100,7 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 setattr(db_obj, field, value)
 
         if hasattr(db_obj, 'updated_at'):
-            db_obj.updated_at = datetime.utcnow()
+            db_obj.updated_at = utcnow()
 
         self.db.commit()
         self.db.refresh(db_obj)
@@ -117,7 +123,7 @@ class BaseDAO(ABC, Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if not hasattr(db_obj, 'deleted_at'):
             raise AttributeError(f"{self.model.__name__} does not support soft deletes")
 
-        db_obj.deleted_at = datetime.utcnow()
+        db_obj.deleted_at = utcnow()
         self.db.commit()
         self.db.refresh(db_obj)
         return db_obj

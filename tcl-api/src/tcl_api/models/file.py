@@ -4,14 +4,6 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional
 from datetime import datetime
 
-
-class UploadFileRequest(BaseModel):
-    """Request metadata for file upload."""
-    deck_id: Optional[str] = Field(None, description="Optional deck ID to associate file with")
-    file_name: str = Field(..., description="Original filename")
-    mime_type: str = Field(..., description="MIME type of the file")
-
-
 class UploadedFile(BaseModel):
     """Uploaded file metadata."""
     file_id: str = Field(..., description="UUID of the file")

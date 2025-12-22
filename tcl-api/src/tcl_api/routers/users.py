@@ -3,10 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
+from tcl_api.models.dto import UserCreate, UserDeleteConfirm, UserUpdate
+from tcl_api.models.entities import User
 from tcl_api.repository.db import get_db
 from tcl_api.services.user import UserService
-from tcl_api.models.user import User, UserCreate, UserUpdate, UserDeleteConfirm
-from tcl_api.models.common import ApiResponse
+from tcl_api.models.response import ApiResponse
 from tcl_api.models.builders import ApiResponseBuilder
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -19,7 +20,7 @@ def create_user(
 ):
     user_service = UserService(db)
     user = user_service.create_user(email=create_data.email, name=create_data.name)
-    return ApiResponseBuilder.created().data(user.serialize(0, 0)).build()
+    return ApiResponseBuilder.created().data(user.serialize(owned_decks_count=0, shared_decks_count=0)).build()
 
 
 @router.get("/{user_id}", response_model=ApiResponse[User])
@@ -45,8 +46,7 @@ def update_user(
     user_service = UserService(db)
     updated_user_data = user_service.update_user(
         user_id=user_id,
-        name=update_data.name,
-        preferences=update_data.preferences
+        name=update_data.name
     )
     return ApiResponseBuilder.ok().data(updated_user_data).build()
 

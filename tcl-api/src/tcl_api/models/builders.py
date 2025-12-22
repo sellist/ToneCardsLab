@@ -1,6 +1,6 @@
 """Response builders for consistent API responses."""
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from fastapi import status
 
 from tcl_api.models.response import ApiResponse, Metadata
@@ -14,8 +14,8 @@ class ApiResponseBuilder:
         self._status_code = status.HTTP_200_OK
         self._message = None
         self._data = None
-        self._errors = None
-        self._metadata = Metadata.model_validate({})
+        self._errors: Optional[Dict[str, Any]] = None
+        self._metadata = Metadata()
 
     @classmethod
     def ok(cls):
@@ -66,6 +66,17 @@ class ApiResponseBuilder:
         self._success = False
         return self
 
+    def error_detail(self, code: str, message: str, field: Optional[str] = None):
+        """Set error details directly."""
+        self._errors = {
+            "code": code,
+            "message": message
+        }
+        if field:
+            self._errors["field"] = field
+        self._success = False
+        return self
+
     def meta(self, **kwargs):
         """Set metadata fields."""
         for key, value in kwargs.items():
@@ -77,10 +88,10 @@ class ApiResponseBuilder:
         """Build the final API response."""
         return ApiResponse(
             success=self._success,
-            message=self._message,
             data=self._data,
-            metadata=self._metadata,
-            errors=self._errors
+            errors=self._errors,
+            message=self._message,
+            metadata=self._metadata
         )
 
     def get_status_code(self) -> int:

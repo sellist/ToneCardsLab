@@ -5,14 +5,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
+from tcl_api.models.dto import CardCreate, CardUpdate, ReorderCardsRequest
+from tcl_api.models.entities import Card
 from tcl_api.repository.db import get_db
 from tcl_api.services.card import CardService
-from tcl_api.models.card import (
-    CardCreate,
-    CardUpdate,
-    ReorderCardsRequest,
-    Card
-)
+
 from tcl_api.models.builders import ApiResponseBuilder
 from tcl_api.models.response import ApiResponse
 router = APIRouter(prefix="/cards", tags=["cards"])
@@ -24,7 +21,6 @@ def create_card(
     deck_id: UUID = Query(..., description="Deck ID to add card to"),
     db: Session = Depends(get_db)
 ):
-    """Create a new card in a deck."""
     card_service = CardService(db)
 
     card_response_data = card_service.create_card(
@@ -40,7 +36,6 @@ def create_card(
 
 @router.get("/{card_id}", response_model=ApiResponse[Card])
 def get_card(card_id: UUID, db: Session = Depends(get_db)):
-    """Get a specific card by ID."""
     card_service = CardService(db)
 
     card_data = card_service.get_card(card_id)
@@ -50,7 +45,6 @@ def get_card(card_id: UUID, db: Session = Depends(get_db)):
 
 @router.get("/deck/{deck_id}", response_model=ApiResponse[List[Card]])
 def get_deck_cards(deck_id: UUID, db: Session = Depends(get_db)):
-    """Get all cards in a deck, ordered by position."""
     card_service = CardService(db)
 
     cards_data = card_service.get_deck_cards(deck_id)
@@ -88,7 +82,6 @@ def reorder_cards(
     reorder_request: ReorderCardsRequest,
     db: Session = Depends(get_db)
 ):
-    """Reorder cards in a deck."""
     card_service = CardService(db)
 
     count = card_service.reorder_cards(deck_id, reorder_request.card_order)

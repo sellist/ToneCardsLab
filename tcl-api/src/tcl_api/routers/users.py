@@ -3,10 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
+from tcl_api.models.dto import UserCreate, UserDeleteConfirm, UserUpdate
+from tcl_api.models.entities import User
 from tcl_api.repository.db import get_db
 from tcl_api.services.user import UserService
-from tcl_api.models.user import User, UserCreate, UserUpdate, UserDeleteConfirm
-from tcl_api.models.common import ApiResponse
+from tcl_api.models.response import ApiResponse
 from tcl_api.models.builders import ApiResponseBuilder
 
 router = APIRouter(prefix="/users", tags=["users"])

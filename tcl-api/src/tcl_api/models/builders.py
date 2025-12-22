@@ -3,18 +3,19 @@
 from typing import Any, Dict, Optional
 from fastapi import status
 
-from tcl_api.models.common import ApiResponse, ResponseStatus, ErrorDetail
+from tcl_api.models.response import ApiResponse, Metadata
 
 
 class ApiResponseBuilder:
     """Builder for creating consistent API responses."""
 
     def __init__(self):
-        self._status = ResponseStatus.SUCCESS
+        self._success = True
         self._status_code = status.HTTP_200_OK
         self._message = None
         self._data = None
-        self._error: Optional[ErrorDetail] = None
+        self._errors: Optional[Dict[str, Any]] = None
+        self._metadata = Metadata()
 
     @classmethod
     def ok(cls):
@@ -32,7 +33,7 @@ class ApiResponseBuilder:
     def error(cls, status_code: int = status.HTTP_400_BAD_REQUEST):
         """Create an error response builder."""
         builder = cls()
-        builder._status = ResponseStatus.ERROR
+        builder._success = False
         builder._status_code = status_code
         return builder
 
@@ -40,7 +41,7 @@ class ApiResponseBuilder:
     def not_found(cls):
         """Create a not found error response builder."""
         builder = cls()
-        builder._status = ResponseStatus.FAILURE
+        builder._success = False
         builder._status_code = status.HTTP_404_NOT_FOUND
         return builder
 
@@ -61,31 +62,36 @@ class ApiResponseBuilder:
 
     def errors(self, errors: Dict[str, Any]):
         """Set error details."""
-        self._error = ErrorDetail(
-            code=errors.get("code", "UNKNOWN_ERROR"),
-            message=errors.get("message", "An error occurred"),
-            field=errors.get("field")
-        )
-        self._status = ResponseStatus.ERROR
+        self._errors = errors
+        self._success = False
         return self
 
     def error_detail(self, code: str, message: str, field: Optional[str] = None):
         """Set error details directly."""
-        self._error = ErrorDetail(code=code, message=message, field=field)
-        self._status = ResponseStatus.ERROR
+        self._errors = {
+            "code": code,
+            "message": message
+        }
+        if field:
+            self._errors["field"] = field
+        self._success = False
         return self
 
     def meta(self, **kwargs):
-        """Set metadata fields (deprecated - kept for backward compatibility)."""
+        """Set metadata fields."""
+        for key, value in kwargs.items():
+            if hasattr(self._metadata, key):
+                setattr(self._metadata, key, value)
         return self
 
     def build(self) -> ApiResponse:
         """Build the final API response."""
         return ApiResponse(
-            status=self._status,
+            success=self._success,
             data=self._data,
-            error=self._error,
-            message=self._message
+            errors=self._errors,
+            message=self._message,
+            metadata=self._metadata
         )
 
     def get_status_code(self) -> int:

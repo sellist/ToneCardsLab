@@ -244,7 +244,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__common__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -581,7 +581,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__response__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -903,7 +903,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__response__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1001,7 +1001,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__response__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1101,7 +1101,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__response__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1357,7 +1357,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__common__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1420,7 +1420,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__common__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1527,7 +1527,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__common__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1679,7 +1679,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__response__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1832,7 +1832,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tcl_api__models__response__ApiResponse"
+                  "$ref": "#/components/schemas/ApiResponse"
                 }
               }
             }
@@ -1937,13 +1937,32 @@
   },
   "components": {
     "schemas": {
-      "ApiResponse_Card_": {
+      "ApiResponse": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
+          },
+          "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "Response data payload"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorDetail"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -1955,7 +1974,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_Card_": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -1966,36 +2007,18 @@
                 "type": "null"
               }
             ],
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse[Card]"
-      },
-      "ApiResponse_Deck_": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -2007,7 +2030,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[Card]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_Deck_": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2018,36 +2063,18 @@
                 "type": "null"
               }
             ],
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse[Deck]"
-      },
-      "ApiResponse_Dict_": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -2059,7 +2086,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[Deck]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_Dict_": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2072,36 +2121,18 @@
               }
             ],
             "title": "Data",
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse[Dict]"
-      },
-      "ApiResponse_Dict_str__List_DeckSummary___": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -2113,7 +2144,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[Dict]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_Dict_str__List_DeckSummary___": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2131,36 +2184,18 @@
               }
             ],
             "title": "Data",
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse[Dict[str, List[DeckSummary]]]"
-      },
-      "ApiResponse_List_Card__": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -2172,7 +2207,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[Dict[str, List[DeckSummary]]]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_List_Card__": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2187,36 +2244,18 @@
               }
             ],
             "title": "Data",
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse[List[Card]]"
-      },
-      "ApiResponse_List_DeckSummary__": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -2228,7 +2267,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[List[Card]]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_List_DeckSummary__": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2243,28 +2304,46 @@
               }
             ],
             "title": "Data",
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
+            "description": "Error details if status is failure/error"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Optional human-readable message"
           }
         },
         "type": "object",
-        "title": "ApiResponse[List[DeckSummary]]"
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[List[DeckSummary]]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
       },
       "ApiResponse_List_ShareByEmailResponse__": {
         "properties": {
@@ -2328,23 +2407,9 @@
       },
       "ApiResponse_List_UploadedFile__": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
-          },
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message",
-            "description": "Response message or error description"
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2359,28 +2424,46 @@
               }
             ],
             "title": "Data",
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
+            "description": "Error details if status is failure/error"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Optional human-readable message"
           }
         },
         "type": "object",
-        "title": "ApiResponse[List[UploadedFile]]"
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[List[UploadedFile]]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
       },
       "ApiResponse_List_User__": {
         "properties": {
@@ -2500,23 +2583,9 @@
       },
       "ApiResponse_UploadedFile_": {
         "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
-          },
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message",
-            "description": "Response message or error description"
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2527,36 +2596,18 @@
                 "type": "null"
               }
             ],
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse[UploadedFile]"
-      },
-      "ApiResponse_UserFilesResponse_": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
+            "description": "Error details if status is failure/error"
           },
           "message": {
             "anyOf": [
@@ -2568,7 +2619,29 @@
               }
             ],
             "title": "Message",
-            "description": "Response message or error description"
+            "description": "Optional human-readable message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[UploadedFile]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
+      },
+      "ApiResponse_UserFilesResponse_": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus",
+            "description": "Response status"
           },
           "data": {
             "anyOf": [
@@ -2579,28 +2652,46 @@
                 "type": "null"
               }
             ],
-            "description": "Response payload"
+            "description": "Response data payload"
           },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
+          "error": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ErrorDetail"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Errors",
-            "description": "Error details if any"
+            "description": "Error details if status is failure/error"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Optional human-readable message"
           }
         },
         "type": "object",
-        "title": "ApiResponse[UserFilesResponse]"
+        "required": [
+          "status"
+        ],
+        "title": "ApiResponse[UserFilesResponse]",
+        "examples": [
+          {
+            "data": {
+              "id": "123"
+            },
+            "message": "Operation completed successfully",
+            "status": "success"
+          }
+        ]
       },
       "ApiResponse_User_": {
         "properties": {
@@ -3165,84 +3256,6 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "Metadata": {
-        "properties": {
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Timestamp",
-            "description": "Response timestamp"
-          },
-          "request_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Request Id",
-            "description": "Unique request identifier"
-          },
-          "version": {
-            "type": "string",
-            "title": "Version",
-            "description": "API version",
-            "default": "1.0"
-          },
-          "total_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Count",
-            "description": "Total number of items (for paginated responses)"
-          },
-          "page": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Page",
-            "description": "Current page number"
-          },
-          "page_size": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Page Size",
-            "description": "Number of items per page"
-          },
-          "execution_time_ms": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Execution Time Ms",
-            "description": "Request execution time in milliseconds"
-          }
-        },
-        "type": "object",
-        "title": "Metadata"
-      },
       "RendererType": {
         "type": "string",
         "enum": [
@@ -3595,112 +3608,6 @@
           "deck_id"
         ],
         "title": "ViewersResponse"
-      },
-      "tcl_api__models__common__ApiResponse": {
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/ResponseStatus",
-            "description": "Response status"
-          },
-          "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Data",
-            "description": "Response data payload"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ErrorDetail"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Error details if status is failure/error"
-          },
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message",
-            "description": "Optional human-readable message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "ApiResponse",
-        "examples": [
-          {
-            "data": {
-              "id": "123"
-            },
-            "message": "Operation completed successfully",
-            "status": "success"
-          }
-        ]
-      },
-      "tcl_api__models__response__ApiResponse": {
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "title": "Success",
-            "description": "Indicates if the request was successful",
-            "default": true
-          },
-          "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message",
-            "description": "Response message or error description"
-          },
-          "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Data",
-            "description": "Response payload"
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/Metadata",
-            "description": "Response metadata"
-          },
-          "errors": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Errors",
-            "description": "Error details if any"
-          }
-        },
-        "type": "object",
-        "title": "ApiResponse"
       }
     }
   }

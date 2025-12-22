@@ -8,7 +8,7 @@ from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.repository.db.models import Deck, DeckViewer, DeckInvitation
+from tcl_api.models.entities import DeckInvitation, DeckViewer, Deck
 
 
 @get_dao(Deck)
@@ -55,8 +55,8 @@ class SharingService:
         self.logger.info(f"Retrieved {len(viewer_ids)} viewers for deck {deck_id}")
 
         return {
-            "deck_id": str(deck_id),
-            "viewer_ids": [str(vid) for vid in viewer_ids]
+            "deck_id": deck_id,
+            "viewer_ids": viewer_ids
         }
 
     def add_viewers(
@@ -66,7 +66,6 @@ class SharingService:
         owner_id: UUID,
         user_dao: 'UserDAO'
     ) -> List[UUID]:
-        """Add viewers to a deck."""
         self.logger.debug(f"Adding {len(viewer_ids)} viewers to deck {deck_id}")
 
         deck = self._check_deck_exists(deck_id)
@@ -100,7 +99,6 @@ class SharingService:
         viewer_ids: List[UUID],
         owner_id: UUID
     ) -> List[UUID]:
-        """Remove viewers from a deck."""
         self.logger.debug(f"Removing {len(viewer_ids)} viewers from deck {deck_id}")
 
         deck = self._check_deck_exists(deck_id)
@@ -117,11 +115,10 @@ class SharingService:
         return removed_viewers
 
     def get_updated_viewers(self, deck_id: UUID) -> Dict[str, Any]:
-        """Get current list of viewers for a deck."""
         viewer_ids = self.viewer_dao.get_viewer_ids(deck_id)
         return {
-            "deck_id": str(deck_id),
-            "viewer_ids": [str(vid) for vid in viewer_ids]
+            "deck_id": deck_id,
+            "viewer_ids": viewer_ids
         }
 
     def create_invitation(
@@ -131,7 +128,6 @@ class SharingService:
         recipient_email: str,
         message: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Create and send a deck sharing invitation."""
         self.logger.debug(f"Creating invitation for {recipient_email} to deck {deck_id}")
 
         deck = self._check_deck_exists(deck_id)
@@ -151,13 +147,12 @@ class SharingService:
         self.logger.info(f"Created invitation {invitation.invitation_id} for {recipient_email}")
 
         return {
-            "invitation_id": str(invitation.invitation_id),
+            "invitation_id": invitation.invitation_id,
             "status": invitation.status,
-            "expires_at": invitation.expires_at.isoformat()
+            "expires_at": invitation.expires_at
         }
 
     def get_invitation(self, invitation_id: UUID) -> Dict[str, Any]:
-        """Get invitation details."""
         self.logger.debug(f"Retrieving invitation {invitation_id}")
 
         invitation = self.invitation_dao.get_by_id(invitation_id)
@@ -169,9 +164,9 @@ class SharingService:
             )
 
         return {
-            "invitation_id": str(invitation.invitation_id),
+            "invitation_id": invitation.invitation_id,
             "status": invitation.status,
-            "expires_at": invitation.expires_at.isoformat() if invitation.expires_at else None
+            "expires_at": invitation.expires_at
         }
 
     def accept_invitation(
@@ -181,7 +176,6 @@ class SharingService:
         user_id: UUID,
         user_dao: 'UserDAO'
     ) -> bool:
-        """Accept a deck sharing invitation."""
         self.logger.debug(f"Accepting invitation {invitation_id} for user {user_id}")
 
         invitation = self.invitation_dao.get_by_id(invitation_id)
@@ -236,16 +230,15 @@ class SharingService:
         return True
 
     def get_pending_invitations(self, email: str) -> List[Dict[str, Any]]:
-        """Get pending invitations for a user's email."""
         self.logger.debug(f"Retrieving pending invitations for {email}")
 
         invitations = self.invitation_dao.get_pending_invitations(email)
 
         invitations_data = [
             {
-                "invitation_id": str(inv.invitation_id),
+                "invitation_id": inv.invitation_id,
                 "status": inv.status,
-                "expires_at": inv.expires_at.isoformat() if inv.expires_at else None
+                "expires_at": inv.expires_at
             }
             for inv in invitations
         ]
@@ -253,7 +246,6 @@ class SharingService:
         return invitations_data
 
     def revoke_invitation(self, invitation_id: UUID) -> bool:
-        """Revoke a pending invitation."""
         self.logger.debug(f"Revoking invitation {invitation_id}")
 
         invitation = self.invitation_dao.update(invitation_id, {"status": "revoked"})
@@ -274,7 +266,6 @@ class SharingService:
         viewer_id: UUID,
         owner_id: UUID
     ) -> bool:
-        """Remove a specific viewer from a deck."""
         self.logger.debug(f"Removing viewer {viewer_id} from deck {deck_id}")
 
         deck = self._check_deck_exists(deck_id)

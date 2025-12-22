@@ -11,7 +11,6 @@ from enum import Enum
 from typing import Optional, List, Dict, Any
 from uuid import UUID, uuid4
 
-from pydantic import EmailStr
 from sqlmodel import SQLModel, Field, Relationship, Column
 from sqlalchemy import String, Text, BigInteger, JSON, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -21,11 +20,6 @@ from sqlalchemy import TypeDecorator
 def utcnow() -> datetime:
     """Return timezone-aware UTC datetime."""
     return datetime.now(timezone.utc)
-
-
-# ---------------------------------------------------------------------------
-# Custom Types
-# ---------------------------------------------------------------------------
 
 class GUID(TypeDecorator):
     impl = String(36)
@@ -123,11 +117,11 @@ class User(SQLModel, table=True):
     def serialize(self, owned_decks_count: int = 0, shared_decks_count: int = 0) -> Dict[str, Any]:
         """Serialize User for API response."""
         return {
-            "user_id": str(self.user_id),
+            "user_id": self.user_id,
             "email": self.email,
             "name": self.name,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
             "owned_decks_count": owned_decks_count,
             "shared_decks_count": shared_decks_count,
         }
@@ -212,16 +206,16 @@ class Deck(SQLModel, table=True):
         card_list = cards or []
         viewer_list = viewer_ids or []
         return {
-            "deck_id": str(self.deck_id),
-            "owner_id": str(self.owner_id),
+            "deck_id": self.deck_id,
+            "owner_id": self.owner_id,
             "title": self.title,
             "description": self.description,
             "is_public": self.is_public,
             "cards": [card.serialize() for card in card_list],
             "shared_with": viewer_list,
             "card_count": len(card_list),
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
 
@@ -282,14 +276,14 @@ class Card(SQLModel, table=True):
     def serialize(self) -> Dict[str, Any]:
         """Serialize Card for API response."""
         return {
-            "card_id": str(self.card_id),
+            "card_id": self.card_id,
             "front_content": self.front_content,
             "back_content": self.back_content,
             "front_renderer": self.front_renderer.value if isinstance(self.front_renderer, RendererType) else self.front_renderer,
             "back_renderer": self.back_renderer.value if isinstance(self.back_renderer, RendererType) else self.back_renderer,
             "position": self.position,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
 
@@ -388,15 +382,15 @@ class DeckInvitation(SQLModel, table=True):
     def serialize(self) -> Dict[str, Any]:
         """Serialize DeckInvitation for API response."""
         return {
-            "invitation_id": str(self.invitation_id),
-            "deck_id": str(self.deck_id),
-            "sender_id": str(self.sender_id),
+            "invitation_id": self.invitation_id,
+            "deck_id": self.deck_id,
+            "sender_id": self.sender_id,
             "recipient_email": self.recipient_email,
             "message": self.message,
             "status": self.status,
-            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "accepted_at": self.accepted_at.isoformat() if self.accepted_at else None,
+            "expires_at": self.expires_at,
+            "created_at": self.created_at,
+            "accepted_at": self.accepted_at,
         }
 
 
@@ -455,13 +449,13 @@ class UploadedFile(SQLModel, table=True):
     def serialize(self) -> Dict[str, Any]:
         """Serialize UploadedFile for API response."""
         return {
-            "file_id": str(self.file_id),
+            "file_id": self.file_id,
             "file_url": self.file_url,
             "file_name": self.file_name,
             "file_size": self.file_size,
             "mime_type": self.mime_type,
-            "uploaded_at": self.uploaded_at.isoformat() if self.uploaded_at else None,
-            "deck_id": str(self.deck_id) if self.deck_id else None,
+            "uploaded_at": self.uploaded_at,
+            "deck_id": self.deck_id,
         }
 
 
@@ -574,13 +568,11 @@ class DeckModeration(SQLModel, table=True):
         description="When last updated"
     )
 
-    # Relationships
     deck: Optional["Deck"] = Relationship(back_populates="moderation")
     reviewer: Optional["User"] = Relationship()
 
 
 class AuthToken(SQLModel, table=True):
-    """Authentication token - database table."""
     __tablename__ = "auth_tokens"
 
     token_id: UUID = Field(
@@ -622,7 +614,6 @@ class AuthToken(SQLModel, table=True):
 
 
 class DeckStatistics(SQLModel, table=True):
-    """Deck usage statistics - database table."""
     __tablename__ = "deck_statistics"
 
     stat_id: UUID = Field(
@@ -660,232 +651,4 @@ class DeckStatistics(SQLModel, table=True):
         default_factory=utcnow,
         description="When last updated"
     )
-
-    # Relationships
     deck: Optional["Deck"] = Relationship(back_populates="statistics")
-
-
-# ---------------------------------------------------------------------------
-# API-Only Models (non-table Pydantic models for requests/responses)
-# ---------------------------------------------------------------------------
-
-class UserCreate(SQLModel):
-    """Request to create a new user."""
-    email: EmailStr = Field(description="User's email address")
-    name: Optional[str] = Field(default=None, max_length=100, description="User's display name")
-
-
-class UserUpdate(SQLModel):
-    """Request to update a user."""
-    name: Optional[str] = Field(default=None, max_length=100, description="Updated display name")
-
-
-class UserRead(SQLModel):
-    """User response with computed fields."""
-    user_id: UUID
-    email: str
-    name: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
-    owned_decks_count: int = 0
-    shared_decks_count: int = 0
-
-
-class UserDeleteConfirm(SQLModel):
-    """Confirm user deletion."""
-    confirmation: str = Field(description="Type 'DELETE' to confirm")
-
-
-class CardCreate(SQLModel):
-    """Request to create a new card."""
-    front_content: str = Field(description="Content for front of card")
-    back_content: str = Field(description="Content for back of card")
-    front_renderer: RendererType = Field(default=RendererType.STRING)
-    back_renderer: RendererType = Field(default=RendererType.STRING)
-
-
-class CardUpdate(SQLModel):
-    """Request to update a card."""
-    front_content: Optional[str] = Field(default=None)
-    back_content: Optional[str] = Field(default=None)
-    front_renderer: Optional[RendererType] = Field(default=None)
-    back_renderer: Optional[RendererType] = Field(default=None)
-
-
-class CardRead(SQLModel):
-    """Card response."""
-    card_id: UUID
-    front_content: str
-    back_content: str
-    front_renderer: RendererType
-    back_renderer: RendererType
-    created_at: datetime
-    updated_at: datetime
-
-
-class ReorderCardsRequest(SQLModel):
-    """Request to reorder cards in a deck."""
-    card_order: List[str] = Field(
-        min_length=1,
-        description="Ordered list of card IDs"
-    )
-
-
-class DeckCreate(SQLModel):
-    """Request to create a new deck."""
-    title: str = Field(min_length=1, max_length=200, description="Deck title")
-    description: Optional[str] = Field(default=None, max_length=1000)
-    cards: List[CardCreate] = Field(default_factory=list)
-    is_public: bool = Field(default=False)
-
-
-class DeckUpdate(SQLModel):
-    """Request to update a deck."""
-    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    description: Optional[str] = Field(default=None, max_length=1000)
-    cards: Optional[List[CardCreate]] = Field(default=None)
-
-
-class DeckSummary(SQLModel):
-    """Deck summary for list views."""
-    deck_id: UUID
-    owner_id: UUID
-    title: str
-    description: Optional[str] = None
-    is_public: bool = False
-    card_count: int = 0
-    shared_with_count: int = 0
-    created_at: datetime
-    updated_at: datetime
-
-
-class DeckRead(SQLModel):
-    """Full deck response with cards."""
-    deck_id: UUID
-    owner_id: UUID
-    title: str
-    description: Optional[str] = None
-    is_public: bool = False
-    cards: List[CardRead] = Field(default_factory=list)
-    shared_with: List[str] = Field(default_factory=list)
-    created_at: datetime
-    updated_at: datetime
-
-
-class DeckExportFormat(str, Enum):
-    """Available deck export formats."""
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-
-
-class DeckExportRequest(SQLModel):
-    """Request to export a deck."""
-    format: DeckExportFormat = Field(description="Export format")
-
-
-class DeckImportRequest(SQLModel):
-    """Request to import a deck."""
-    data: str = Field(description="Deck data in JSON or CSV format")
-    format: DeckExportFormat = Field(description="Format of the import data")
-
-
-class BulkDeleteDecksRequest(SQLModel):
-    """Request to delete multiple decks."""
-    deck_ids: List[str] = Field(min_length=1, description="List of deck IDs to delete")
-
-
-class TogglePublicStatusRequest(SQLModel):
-    """Request to toggle deck public status."""
-    is_public: bool = Field(description="New public status")
-
-
-class ViewersResponse(SQLModel):
-    """Response with deck viewer IDs."""
-    deck_id: str
-    viewer_ids: List[str] = Field(default_factory=list)
-
-
-class EditViewersRequest(SQLModel):
-    """Request to modify deck viewers."""
-    add_viewer_ids: List[str] = Field(default_factory=list)
-    remove_viewer_ids: List[str] = Field(default_factory=list)
-
-
-class ShareByEmailRequest(SQLModel):
-    """Request to share deck by email."""
-    recipient_email: EmailStr
-    message: Optional[str] = Field(default=None, max_length=500)
-
-
-class ShareByEmailResponse(SQLModel):
-    """Response after sending share invitation."""
-    invitation_id: str
-    status: str = "sent"
-    expires_at: Optional[str] = None
-
-
-class UploadFileRequest(SQLModel):
-    """Request metadata for file upload."""
-    deck_id: Optional[str] = Field(default=None)
-    file_name: str
-    mime_type: str
-
-
-class FileRead(SQLModel):
-    """Uploaded file response."""
-    file_id: UUID
-    file_url: str
-    file_name: str
-    file_size: int
-    mime_type: str
-    uploaded_at: datetime
-    deck_id: Optional[UUID] = None
-
-
-class UserFilesResponse(SQLModel):
-    """Response with user's files."""
-    files: List[FileRead] = Field(default_factory=list)
-    total_size: int
-    total_count: int
-
-
-class DeleteFileRequest(SQLModel):
-    """Request to delete a file."""
-    file_id: str
-
-
-class LoginRequest(SQLModel):
-    """Login request."""
-    email: EmailStr
-    password: str = Field(min_length=8)
-
-
-class TokenResponse(SQLModel):
-    """Token response."""
-    access_token: str
-    refresh_token: Optional[str] = None
-    token_type: str = "Bearer"
-    expires_in: int
-
-
-class LoginResponse(TokenResponse):
-    """Login response with user ID."""
-    user_id: str
-
-
-class RefreshTokenRequest(SQLModel):
-    """Token refresh request."""
-    refresh_token: str
-
-
-class LogoutRequest(SQLModel):
-    """Logout request."""
-    token: str
-
-
-class ReportRequest(SQLModel):
-    """Content report request."""
-    reason: str = Field(max_length=100)
-    description: Optional[str] = Field(default=None, max_length=1000)
-

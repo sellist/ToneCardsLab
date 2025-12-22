@@ -1,8 +1,13 @@
 from typing import Generic, TypeVar, Optional, Dict, Any
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from pydantic import BaseModel
+import time
 
 T = TypeVar('T')
+
+_START_TIME = time.monotonic()
 
 
 class Metadata(BaseModel):
@@ -46,3 +51,14 @@ class PaginatedResponse(BaseModel, Generic[T]):
         self.metadata.total_count = total
         self.metadata.page = page
         self.metadata.page_size = page_size
+
+
+class HealthResponse(BaseModel):
+    status: str
+    version: str
+    uptime_seconds: float = 0.0
+    checks: dict = {}
+
+    def __init__(self, **data):
+        super().__init__()
+        self.uptime_seconds = time.monotonic() - _START_TIME

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, and_, or_
 
 from .base import BaseDAO
-from .models import User, Deck, Card, DeckViewer, DeckInvitation, UploadedFile, ContentReport
+from ...models.entities import User, Deck, DeckViewer, Card, DeckInvitation, UploadedFile, ContentReport
 
 
 def utcnow() -> datetime:

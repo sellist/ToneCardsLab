@@ -6,17 +6,13 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from tcl_api.models import ApiResponse
+from tcl_api.models.dto import ViewersResponse, ShareByEmailResponse, EditViewersRequest, ShareByEmailRequest
+from tcl_api.models.response import ApiResponse
 from tcl_api.repository.db import get_db
 from tcl_api.repository.db.daos import UserDAO
 from tcl_api.services.sharing import SharingService
 from tcl_api.services.deck import DeckService
-from tcl_api.models.sharing import (
-    ViewersResponse,
-    EditViewersRequest,
-    ShareByEmailRequest,
-    ShareByEmailResponse
-)
+
 from tcl_api.models.builders import ApiResponseBuilder
 router = APIRouter(prefix="/sharing", tags=["sharing"])
 

@@ -2,8 +2,8 @@ import logging
 from typing import Type, TypeVar, Dict, Any, Optional, Callable
 from sqlalchemy.orm import Session
 
+from tcl_api.models.entities import User, Deck, Card, DeckViewer
 from tcl_api.repository.db.base import BaseDAO
-from tcl_api.repository.db.models import User, Deck, Card, DeckViewer
 from tcl_api.repository.db.daos import UserDAO, DeckDAO, CardDAO, DeckViewerDAO
 
 ModelType = TypeVar("ModelType")

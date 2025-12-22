@@ -9,13 +9,6 @@ class Pagination(BaseModel):
 
     @classmethod
     def from_page(cls, page: int = 1, page_size: int = 20) -> "Pagination":
-        """
-        Create a Pagination object from page number and page size.
-
-        Args:
-            page: Page number (1-indexed). Defaults to 1.
-            page_size: Number of items per page. Defaults to 20.
-        """
         page = max(1, page)
         page_size = max(1, min(page_size, 100))
         skip = (page - 1) * page_size
@@ -23,13 +16,6 @@ class Pagination(BaseModel):
 
     @classmethod
     def from_skip_limit(cls, skip: int = 0, limit: int = 20) -> "Pagination":
-        """
-        Create a Pagination object from skip and limit values.
-
-        Args:
-            skip: Number of items to skip. Defaults to 0.
-            limit: Maximum number of items to return. Defaults to 20.
-        """
         skip = max(0, skip)
         limit = max(1, min(limit, 100))
         return cls(skip=skip, limit=limit)

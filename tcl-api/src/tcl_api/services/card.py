@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.repository.db.models import Card, Deck
+from tcl_api.models.entities import Card, Deck
 
 
 @get_dao(Card)

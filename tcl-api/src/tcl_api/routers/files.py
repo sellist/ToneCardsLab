@@ -14,7 +14,7 @@ from tcl_api.models.file import (
     UserFilesResponse
 )
 from tcl_api.models.builders import ApiResponseBuilder
-from tcl_api.models.common import ApiResponse
+from tcl_api.models.response import ApiResponse
 
 router = APIRouter(prefix="/files", tags=["files"])
 

@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.repository.db.models import User, Deck, DeckViewer
+from tcl_api.models.entities import User, Deck, DeckViewer
 
 
 @get_dao(User)
@@ -173,7 +173,7 @@ class UserService:
         self.logger.info(f"Retrieved stats for user: {user_id}")
 
         return {
-            "user_id": str(user.user_id),
+            "user_id": user.user_id,
             "email": user.email,
             "owned_decks_count": owned_count,
             "shared_decks_count": shared_count,

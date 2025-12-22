@@ -113,10 +113,7 @@ def list_decks(
         if deck.deleted_at:
             continue
 
-        card_count = deck_service.card_dao.count_by_deck(deck.deck_id)
-        viewer_count = len(deck_service.deckviewer_dao.get_viewer_ids(deck.deck_id))
-
-        result.append(deck.serialize_summary(card_count, viewer_count))
+        result.append(deck.get_summary())
 
     return ApiResponseBuilder.ok().data(result).meta(
         total_count=len(result),
@@ -131,7 +128,6 @@ def get_user_decks(user_id: UUID, db: Session = Depends(get_db)):
     user_dao = UserDAO(db)
     deck_service = DeckService(db)
 
-    # Verify user exists
     user = user_dao.get_by_id(user_id)
     if not user or user.deleted_at:
         raise HTTPException(
@@ -139,11 +135,9 @@ def get_user_decks(user_id: UUID, db: Session = Depends(get_db)):
             detail="User not found"
         )
 
-    # Get owned and accessible decks using service
     owned_decks = deck_service.get_owned_decks(user_id, limit=100)
     accessible_decks = deck_service.get_accessible_decks(user_id, limit=100)
 
-    # Filter out owned decks from accessible to get only shared decks
     shared_decks = [deck for deck in accessible_decks if deck['owner_id'] != user_id]
 
     dashboard_data = {
@@ -198,7 +192,6 @@ def bulk_delete_decks(
     request: BulkDeleteDecksRequest,
     db: Session = Depends(get_db)
 ):
-    """Delete multiple decks at once."""
     deck_service = DeckService(db)
 
     success_count = 0
@@ -231,8 +224,6 @@ def bulk_delete_decks(
 @router.post("/{deck_id}/toggle-public", response_model=ApiResponse[Deck])
 def toggle_public_status(deck_id: UUID, db: Session = Depends(get_db)):
     deck_service = DeckService(db)
-
-    deck = deck_service._check_deck_exists(deck_id)
 
     deck = deck_service.deck_dao.update(deck_id, {"is_public": not deck.is_public})
 

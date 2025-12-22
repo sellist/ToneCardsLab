@@ -170,7 +170,6 @@ class Deck(SQLModel, table=True):
         description="Soft delete timestamp"
     )
 
-    # Relationships
     owner: Optional["User"] = Relationship(
         back_populates="owned_decks",
         sa_relationship_kwargs={"foreign_keys": "[Deck.owner_id]"}
@@ -202,7 +201,6 @@ class Deck(SQLModel, table=True):
     )
 
     def serialize(self, cards: Optional[List["Card"]] = None, viewer_ids: Optional[List[str]] = None) -> Dict[str, Any]:
-        """Serialize Deck for API response."""
         card_list = cards or []
         viewer_list = viewer_ids or []
         return {

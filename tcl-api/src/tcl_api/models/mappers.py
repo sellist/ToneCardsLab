@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from tcl_api.models.entities import User, Deck, Card, UploadedFile, DeckInvitation
+from tcl_api.models.db.entities import User, Deck, Card, UploadedFile, DeckInvitation
 from tcl_api.models.dto import (
     UserRead,
     DeckRead,

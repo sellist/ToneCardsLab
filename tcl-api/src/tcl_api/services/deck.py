@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
 from tcl_api.models.dto import DeckSummary, DeckRead
-from tcl_api.models.entities import Deck, Card, DeckViewer
+from tcl_api.models.db.entities import Deck, Card, DeckViewer
 from tcl_api.models.mappers import deck_to_read
 
 

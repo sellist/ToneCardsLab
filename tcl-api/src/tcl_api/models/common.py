@@ -19,28 +19,3 @@ class ErrorDetail(BaseModel):
     message: str = Field(..., description="Human-readable error message")
     field: Optional[str] = Field(None, description="Field name if error is field-specific")
 
-
-class TimestampMixin(BaseModel):
-    """Mixin for models with timestamp fields."""
-    created_at: datetime = Field(..., description="Timestamp when resource was created")
-    updated_at: datetime = Field(..., description="Timestamp when resource was last updated")
-
-
-class OwnershipMixin(BaseModel):
-    """Mixin for models with ownership fields."""
-    owner_id: str = Field(..., description="UUID of the user who owns this resource")
-    is_public: bool = Field(default=False, description="Whether this resource is publicly accessible")
-
-
-class IdResponse(BaseModel):
-    """Response containing a single resource ID."""
-    id: str = Field(..., description="UUID of the resource")
-
-
-class SearchParams(BaseModel):
-    """Common search parameters."""
-    query: str = Field(..., min_length=1, description="Search query string")
-    page: int = Field(default=1, ge=1, description="Page number")
-    page_size: int = Field(default=20, ge=1, le=100, description="Items per page")
-
-

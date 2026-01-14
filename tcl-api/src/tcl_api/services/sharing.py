@@ -8,7 +8,7 @@ from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.models.entities import DeckInvitation, DeckViewer, Deck
+from tcl_api.models.db.entities import DeckInvitation, DeckViewer, Deck
 
 
 @get_dao(Deck)

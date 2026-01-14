@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from tcl_api.models.dto import CardCreate, CardUpdate, ReorderCardsRequest, CardRead
-from tcl_api.models.entities import Card
+from tcl_api.models.db.entities import Card
 from tcl_api.repository.db import get_db
 from tcl_api.services.card import CardService
 

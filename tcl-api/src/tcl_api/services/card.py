@@ -1,13 +1,13 @@
 """Card management service."""
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.models.entities import Card, Deck
+from tcl_api.models.db.entities import Card, Deck
 from tcl_api.models.dto import CardRead
 from tcl_api.models.mappers import card_to_read
 

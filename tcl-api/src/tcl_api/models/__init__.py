@@ -14,7 +14,7 @@ Organized by category:
 """
 
 # Database entities
-from tcl_api.models.entities import (
+from tcl_api.models.db.entities import (
     User,
     Deck,
     Card,
@@ -92,11 +92,7 @@ from tcl_api.models.pagination import (
 # Common models
 from tcl_api.models.common import (
     ResponseStatus,
-    ErrorDetail,
-    TimestampMixin,
-    OwnershipMixin,
-    IdResponse,
-    SearchParams,
+    ErrorDetail
 )
 
 # Enums
@@ -176,10 +172,6 @@ __all__ = [
     # Common
     "ResponseStatus",
     "ErrorDetail",
-    "TimestampMixin",
-    "OwnershipMixin",
-    "IdResponse",
-    "SearchParams",
     # Enums
     "RendererType",
     "DeckExportFormat",

@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """Database creation and migration script for ToneCards Lab API."""
 
-import os
 import sys
 import logging
 from pathlib import Path
-from urllib.parse import urlparse
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from tcl_api.repository.db.database import Base, engine, DB_TYPE, setup_database
-from tcl_api.repository.db.models import (
+from tcl_api.repository.db.database import engine, DB_TYPE, setup_database
+from tcl_api.models.db.entities import (
     User, Deck, Card, DeckViewer, DeckInvitation,
     UploadedFile, ContentReport, DeckModeration,
-    AuthToken, DeckStatistics, RendererType
+    AuthToken, DeckStatistics
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -47,8 +44,17 @@ def main():
     try:
         logger.info(f"Starting {DB_TYPE} database setup...")
 
-        setup_database()
+        # Ensure all models are imported and registered
+        models = [User, Deck, Card, DeckViewer, DeckInvitation,
+                  UploadedFile, ContentReport, DeckModeration,
+                  AuthToken, DeckStatistics]
+        logger.info(f"Loaded {len(models)} table models")
 
+        # Create database and tables from models
+        setup_database()
+        logger.info("Database and tables created from models")
+
+        # Create database extensions (PostgreSQL only)
         create_extensions()
 
         logger.info(f"{DB_TYPE} database setup completed successfully!")

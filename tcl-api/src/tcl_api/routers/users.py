@@ -3,8 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
-from tcl_api.models.dto import UserCreate, UserDeleteConfirm, UserUpdate
-from tcl_api.models.entities import User
+from tcl_api.models.dto import UserCreate, UserDeleteConfirm, UserUpdate, UserRead
 from tcl_api.repository.db import get_db
 from tcl_api.services.user import UserService
 from tcl_api.models.response import ApiResponse
@@ -13,31 +12,33 @@ from tcl_api.models.builders import ApiResponseBuilder
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post("/", response_model=ApiResponse[User])
+@router.post("/", response_model=ApiResponse[UserRead])
 def create_user(
     create_data: UserCreate,
     db: Session = Depends(get_db)
 ):
     user_service = UserService(db)
     user = user_service.create_user(email=create_data.email, name=create_data.name)
-    return ApiResponseBuilder.created().data(user.serialize(owned_decks_count=0, shared_decks_count=0)).build()
+    from tcl_api.models.mappers import user_to_read
+    user_dto = user_to_read(user, owned_decks_count=0, shared_decks_count=0)
+    return ApiResponseBuilder.created().data(user_dto).build()
 
 
-@router.get("/{user_id}", response_model=ApiResponse[User])
+@router.get("/{user_id}", response_model=ApiResponse[UserRead])
 def get_user(user_id: UUID, db: Session = Depends(get_db)):
     user_service = UserService(db)
     user_data = user_service.get_user_by_id(user_id)
     return ApiResponseBuilder.ok().data(user_data).build()
 
 
-@router.get("/email/{email}", response_model=ApiResponse[User])
+@router.get("/email/{email}", response_model=ApiResponse[UserRead])
 def get_user_by_email(email: str, db: Session = Depends(get_db)):
     user_service = UserService(db)
     user_data = user_service.get_user_by_email(email)
     return ApiResponseBuilder.ok().data(user_data).build()
 
 
-@router.patch("/{user_id}", response_model=ApiResponse[User])
+@router.patch("/{user_id}", response_model=ApiResponse[UserRead])
 def update_user(
     user_id: UUID,
     update_data: UserUpdate,
@@ -76,7 +77,7 @@ def delete_user(
     return ApiResponseBuilder.ok().message("User account deleted successfully").build()
 
 
-@router.get("/", response_model=ApiResponse[List[User]])
+@router.get("/", response_model=ApiResponse[List[UserRead]])
 def list_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),

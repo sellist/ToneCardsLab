@@ -1,12 +1,13 @@
+"""Data Transfer Objects (DTOs) for API requests and responses."""
+
 from datetime import datetime
-from enum import Enum
 from typing import Optional, List
 from uuid import UUID
 
 from pydantic import EmailStr, Field
 from sqlmodel import SQLModel
 
-from tcl_api.models.entities import RendererType
+from tcl_api.models.enum import RendererType, DeckExportFormat
 
 
 class UserCreate(SQLModel):
@@ -15,12 +16,10 @@ class UserCreate(SQLModel):
 
 
 class UserUpdate(SQLModel):
-    """Request to update a user."""
     name: Optional[str] = Field(default=None, max_length=100, description="Updated display name")
 
 
 class UserRead(SQLModel):
-    """User response with computed fields."""
     user_id: UUID
     email: str
     name: Optional[str] = None
@@ -32,7 +31,6 @@ class UserRead(SQLModel):
 
 class UserDeleteConfirm(SQLModel):
     confirmation: str = Field(description="Type 'DELETE' to confirm")
-
 
 class CardCreate(SQLModel):
     deck_id: UUID = Field(description="UUID of the parent deck (required)")
@@ -103,12 +101,6 @@ class DeckRead(SQLModel):
     updated_at: datetime
 
 
-class DeckExportFormat(str, Enum):
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-
-
 class DeckExportRequest(SQLModel):
     format: DeckExportFormat = Field(description="Export format")
 
@@ -145,56 +137,6 @@ class ShareByEmailResponse(SQLModel):
     invitation_id: UUID
     status: str = "sent"
     expires_at: Optional[datetime] = None
-
-
-class UploadFileRequest(SQLModel):
-    deck_id: Optional[UUID] = Field(default=None)
-    file_name: str
-    mime_type: str
-
-
-class FileRead(SQLModel):
-    file_id: UUID
-    file_url: str
-    file_name: str
-    file_size: int
-    mime_type: str
-    uploaded_at: datetime
-    deck_id: Optional[UUID] = None
-
-
-class UserFilesResponse(SQLModel):
-    files: List[FileRead] = Field(default_factory=list)
-    total_size: int
-    total_count: int
-
-
-class DeleteFileRequest(SQLModel):
-    file_id: UUID
-
-
-class LoginRequest(SQLModel):
-    email: EmailStr
-    password: str = Field(min_length=8)
-
-
-class TokenResponse(SQLModel):
-    access_token: str
-    refresh_token: Optional[str] = None
-    token_type: str = "Bearer"
-    expires_in: int
-
-
-class LoginResponse(TokenResponse):
-    user_id: UUID
-
-
-class RefreshTokenRequest(SQLModel):
-    refresh_token: str
-
-
-class LogoutRequest(SQLModel):
-    token: str
 
 
 class ReportRequest(SQLModel):

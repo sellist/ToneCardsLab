@@ -1,6 +1,6 @@
 """Card management service."""
 
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -8,6 +8,8 @@ from fastapi import HTTPException, status
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
 from tcl_api.models.entities import Card, Deck
+from tcl_api.models.dto import CardRead
+from tcl_api.models.mappers import card_to_read
 
 
 @get_dao(Card)
@@ -48,7 +50,7 @@ class CardService:
         back_content: str,
         front_renderer: Optional[str] = None,
         back_renderer: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> CardRead:
         """Create a new card in a deck."""
         self.logger.debug(f"Creating card in deck {deck_id}")
 
@@ -69,35 +71,33 @@ class CardService:
 
         self.logger.info(f"Successfully created card {card.card_id}")
 
-        return card.serialize()
+        return card_to_read(card)
 
-    def get_card(self, card_id: UUID) -> Dict[str, Any]:
-        """Get a specific card by ID."""
-        self.logger.debug(f"Retrieving card {card_id}")
+    def get_card(self, card_id: UUID) -> CardRead:
+        self.logger.debug(f"Retrieving card: {card_id}")
 
         card = self._check_card_exists(card_id)
 
-        self.logger.info(f"Retrieved card {card_id}")
+        self.logger.info(f"Retrieved card: {card_id}")
 
-        return card.serialize()
+        return card_to_read(card)
 
-    def get_deck_cards(self, deck_id: UUID) -> List[Dict[str, Any]]:
-        """Get all cards in a deck, ordered by position."""
-        self.logger.debug(f"Retrieving cards for deck {deck_id}")
+    def get_cards_by_deck(self, deck_id: UUID) -> List[CardRead]:
+        self.logger.debug(f"Retrieving cards for deck: {deck_id}")
 
         self._check_deck_exists(deck_id)
 
-        cards = self.card_dao.get_by_deck(deck_id)
+        cards = self.card_dao.get_by_deck_id(deck_id)
 
         self.logger.info(f"Retrieved {len(cards)} cards for deck {deck_id}")
 
-        return [card.serialize() for card in cards]
+        return [card_to_read(card) for card in cards]
 
     def update_card(
         self,
         card_id: UUID,
         **update_data
-    ) -> Dict[str, Any]:
+    ) -> CardRead:
         """Update a card."""
         self.logger.debug(f"Updating card {card_id}")
 
@@ -112,7 +112,7 @@ class CardService:
 
         self.logger.info(f"Successfully updated card {card_id}")
 
-        return card.serialize()
+        return card_to_read(card)
 
     def delete_card(self, card_id: UUID) -> bool:
         """Delete a card."""
@@ -166,7 +166,7 @@ class CardService:
         self,
         deck_id: UUID,
         cards_data: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    ) -> List[CardRead]:
         """Create multiple cards in a deck."""
         self.logger.debug(f"Bulk creating {len(cards_data)} cards in deck {deck_id}")
 
@@ -189,7 +189,7 @@ class CardService:
 
         self.logger.info(f"Successfully created {len(created_cards)} cards")
 
-        return [card.serialize() for card in created_cards]
+        return [card_to_read(card) for card in created_cards]
 
     def delete_all_cards_in_deck(self, deck_id: UUID) -> int:
         """Delete all cards in a deck."""

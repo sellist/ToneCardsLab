@@ -1,12 +1,13 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.models.dto import DeckSummary
+from tcl_api.models.dto import DeckSummary, DeckRead
 from tcl_api.models.entities import Deck, Card, DeckViewer
+from tcl_api.models.mappers import deck_to_read
 
 
 @get_dao(Deck)
@@ -49,7 +50,7 @@ class DeckService:
         self,
         deck_id: UUID,
         user_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+    ) -> DeckRead:
         self.logger.debug(f"Retrieving deck {deck_id} for user {user_id}")
 
         deck = self._check_deck_exists(deck_id)
@@ -72,7 +73,7 @@ class DeckService:
 
         self.logger.info(f"Successfully retrieved deck {deck_id} for user {user_id}")
 
-        return deck.serialize(cards, viewer_ids)
+        return deck_to_read(deck, cards, viewer_ids)
 
     def is_owner(self, deck_id: UUID, user_id: UUID) -> bool:
         deck = self._check_deck_exists(deck_id)

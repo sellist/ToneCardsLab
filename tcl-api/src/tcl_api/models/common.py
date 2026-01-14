@@ -1,7 +1,7 @@
 """Common reusable Pydantic models for API responses and requests."""
 
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, Generic, TypeVar, List
+from pydantic import BaseModel, Field
+from typing import Optional
 from datetime import datetime
 from enum import Enum
 
@@ -18,16 +18,6 @@ class ErrorDetail(BaseModel):
     code: str = Field(..., description="Error code for programmatic handling")
     message: str = Field(..., description="Human-readable error message")
     field: Optional[str] = Field(None, description="Field name if error is field-specific")
-
-
-T = TypeVar('T')
-
-class TokenResponse(BaseModel):
-    """OAuth/Authentication token response."""
-    access_token: str = Field(..., description="JWT access token")
-    refresh_token: Optional[str] = Field(None, description="JWT refresh token for obtaining new access tokens")
-    token_type: str = Field(default="Bearer", description="Token type")
-    expires_in: int = Field(..., description="Access token expiration time in seconds")
 
 
 class TimestampMixin(BaseModel):
@@ -54,8 +44,3 @@ class SearchParams(BaseModel):
     page_size: int = Field(default=20, ge=1, le=100, description="Items per page")
 
 
-class ReportRequest(BaseModel):
-    """Request model for reporting inappropriate content."""
-    deck_id: str = Field(..., description="UUID of the deck being reported")
-    reason: str = Field(..., description="Category/reason for the report")
-    description: Optional[str] = Field(None, max_length=1000, description="Additional details about the report")

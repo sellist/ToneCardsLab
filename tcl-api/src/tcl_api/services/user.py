@@ -1,13 +1,14 @@
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from uuid import UUID
-from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
 from tcl_api.models.entities import User, Deck, DeckViewer
+from tcl_api.models.dto import UserRead
+from tcl_api.models.mappers import user_to_read
 
 
 @get_dao(User)
@@ -59,7 +60,7 @@ class UserService:
         self.logger.info(f"Successfully created user: {user.user_id}")
         return user
 
-    def get_user_by_id(self, user_id: UUID) -> Dict[str, Any]:
+    def get_user_by_id(self, user_id: UUID) -> UserRead:
         self.logger.debug(f"Retrieving user: {user_id}")
 
         user: User = self._check_user_exists(user_id)
@@ -71,9 +72,9 @@ class UserService:
 
         self.logger.info(f"Retrieved user: {user_id}")
 
-        return user.serialize(owned_decks_count=owned_count, shared_decks_count=shared_count)
+        return user_to_read(user, owned_decks_count=owned_count, shared_decks_count=shared_count)
 
-    def get_user_by_email(self, email: str) -> Dict[str, Any]:
+    def get_user_by_email(self, email: str) -> UserRead:
         self.logger.debug(f"Retrieving user by email: {email}")
 
         user: Optional[User] = self.user_dao.get_by_email(email)
@@ -90,13 +91,13 @@ class UserService:
 
         self.logger.info(f"Retrieved user by email: {email}")
 
-        return user.serialize(owned_decks_count=owned_count, shared_decks_count=shared_count)
+        return user_to_read(user, owned_decks_count=owned_count, shared_decks_count=shared_count)
 
     def update_user(
         self,
         user_id: UUID,
         name: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> UserRead:
         self.logger.debug(f"Updating user: {user_id}")
 
         user: User = self._check_user_exists(user_id)
@@ -120,7 +121,7 @@ class UserService:
 
         self.logger.info(f"Successfully updated user: {user_id}")
 
-        return user.serialize(owned_decks_count=owned_count, shared_decks_count=shared_count)
+        return user_to_read(user, owned_decks_count=owned_count, shared_decks_count=shared_count)
 
     def delete_user(self, user_id: UUID) -> None:
         self.logger.debug(f"Deleting user: {user_id}")
@@ -136,7 +137,7 @@ class UserService:
         skip: int = 0,
         limit: int = 20,
         search: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    ) -> List[UserRead]:
         self.logger.debug(f"Listing users: skip={skip}, limit={limit}, search={search}")
 
         users: List[User]
@@ -152,7 +153,7 @@ class UserService:
             shared_decks: List[Deck] = self.deck_dao.get_shared_with_user(user.user_id)
             shared_count: int = len(shared_decks) if shared_decks else 0
 
-            result.append(user.serialize(owned_decks_count=owned_count, shared_decks_count=shared_count))
+            result.append(user_to_read(user, owned_decks_count=owned_count, shared_decks_count=shared_count))
 
         self.logger.info(f"Retrieved {len(result)} users")
         return result

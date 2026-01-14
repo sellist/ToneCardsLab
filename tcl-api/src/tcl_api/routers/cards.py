@@ -1,11 +1,11 @@
 """Card management router."""
 
-from typing import List, Dict
+from typing import List
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from tcl_api.models.dto import CardCreate, CardUpdate, ReorderCardsRequest
+from tcl_api.models.dto import CardCreate, CardUpdate, ReorderCardsRequest, CardRead
 from tcl_api.models.entities import Card
 from tcl_api.repository.db import get_db
 from tcl_api.services.card import CardService
@@ -34,7 +34,7 @@ def create_card(
     return ApiResponseBuilder.created().data(card_response_data).message("Card created successfully").build()
 
 
-@router.get("/{card_id}", response_model=ApiResponse[Card])
+@router.get("/{card_id}", response_model=ApiResponse[CardRead])
 def get_card(card_id: UUID, db: Session = Depends(get_db)):
     card_service = CardService(db)
 
@@ -43,7 +43,7 @@ def get_card(card_id: UUID, db: Session = Depends(get_db)):
     return ApiResponseBuilder.ok().data(card_data).build()
 
 
-@router.get("/deck/{deck_id}", response_model=ApiResponse[List[Card]])
+@router.get("/deck/{deck_id}", response_model=ApiResponse[List[CardRead]])
 def get_deck_cards(deck_id: UUID, db: Session = Depends(get_db)):
     card_service = CardService(db)
 
@@ -52,7 +52,7 @@ def get_deck_cards(deck_id: UUID, db: Session = Depends(get_db)):
     return ApiResponseBuilder.ok().data(cards_data).build()
 
 
-@router.patch("/{card_id}", response_model=ApiResponse[Card])
+@router.patch("/{card_id}", response_model=ApiResponse[CardRead])
 def update_card(
     card_id: UUID,
     card_update: CardUpdate,

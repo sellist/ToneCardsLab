@@ -1,13 +1,4 @@
-"""
-Unified SQLModel entities - single source of truth for database and API models.
-
-Each model serves both as:
-- SQLAlchemy ORM model for database operations (when table=True)
-- Pydantic model for API request/response validation
-"""
-
 from datetime import datetime, timezone
-from enum import Enum
 from typing import Optional, List, Dict, Any
 from uuid import UUID, uuid4
 
@@ -15,6 +6,8 @@ from sqlmodel import SQLModel, Field, Relationship, Column
 from sqlalchemy import String, Text, BigInteger, JSON, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import TypeDecorator
+
+from tcl_api.models.enum import RendererType
 
 
 def utcnow() -> datetime:
@@ -43,25 +36,8 @@ class GUID(TypeDecorator):
         return UUID(value) if value else None
 
 
-# ---------------------------------------------------------------------------
-# enums
-# ---------------------------------------------------------------------------
-
-class RendererType(str, Enum):
-    """Available content renderer types for cards."""
-    STRING = "string"
-    MARKDOWN = "markdown"
-    ABC_JS = "abc_js"
-    IMAGE = "image"
-    LATEX = "latex"
-    MERMAID = "mermaid"
-
-
-# database models
-# ---------------------------------------------------------------------------
-
 class User(SQLModel, table=True):
-    """User account - both database table and API model."""
+    """User account database entity."""
     __tablename__ = "users"
 
     user_id: UUID = Field(
@@ -94,7 +70,6 @@ class User(SQLModel, table=True):
         description="Soft delete timestamp"
     )
 
-    # Relationships
     owned_decks: List["Deck"] = Relationship(
         back_populates="owner",
         sa_relationship_kwargs={"foreign_keys": "[Deck.owner_id]"}
@@ -114,21 +89,10 @@ class User(SQLModel, table=True):
     )
     auth_tokens: List["AuthToken"] = Relationship(back_populates="user")
 
-    def serialize(self, owned_decks_count: int = 0, shared_decks_count: int = 0) -> Dict[str, Any]:
-        """Serialize User for API response."""
-        return {
-            "user_id": self.user_id,
-            "email": self.email,
-            "name": self.name,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "owned_decks_count": owned_decks_count,
-            "shared_decks_count": shared_decks_count,
-        }
 
 
 class Deck(SQLModel, table=True):
-    """Flashcard deck - both database table and API model."""
+    """Flashcard deck database entity."""
     __tablename__ = "decks"
 
     deck_id: UUID = Field(
@@ -200,25 +164,10 @@ class Deck(SQLModel, table=True):
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete-orphan"}
     )
 
-    def serialize(self, cards: Optional[List["Card"]] = None, viewer_ids: Optional[List[str]] = None) -> Dict[str, Any]:
-        card_list = cards or []
-        viewer_list = viewer_ids or []
-        return {
-            "deck_id": self.deck_id,
-            "owner_id": self.owner_id,
-            "title": self.title,
-            "description": self.description,
-            "is_public": self.is_public,
-            "cards": [card.serialize() for card in card_list],
-            "shared_with": viewer_list,
-            "card_count": len(card_list),
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-        }
 
 
 class Card(SQLModel, table=True):
-    """Flashcard within a deck - both database table and API model."""
+    """Flashcard database entity."""
     __tablename__ = "cards"
 
     card_id: UUID = Field(
@@ -264,25 +213,12 @@ class Card(SQLModel, table=True):
         description="When the card was last updated"
     )
 
-    # Relationships
     deck: Optional["Deck"] = Relationship(back_populates="cards")
 
     __table_args__ = (
         UniqueConstraint('deck_id', 'position', name='idx_cards_unique_position'),
     )
 
-    def serialize(self) -> Dict[str, Any]:
-        """Serialize Card for API response."""
-        return {
-            "card_id": self.card_id,
-            "front_content": self.front_content,
-            "back_content": self.back_content,
-            "front_renderer": self.front_renderer.value if isinstance(self.front_renderer, RendererType) else self.front_renderer,
-            "back_renderer": self.back_renderer.value if isinstance(self.back_renderer, RendererType) else self.back_renderer,
-            "position": self.position,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-        }
 
 
 class DeckViewer(SQLModel, table=True):
@@ -312,7 +248,6 @@ class DeckViewer(SQLModel, table=True):
         description="UUID of user who granted access"
     )
 
-    # Relationships
     deck: Optional["Deck"] = Relationship(back_populates="viewers")
     viewer: Optional["User"] = Relationship(
         back_populates="viewed_decks",
@@ -370,26 +305,11 @@ class DeckInvitation(SQLModel, table=True):
         description="When the invitation was accepted"
     )
 
-    # Relationships
     deck: Optional["Deck"] = Relationship(back_populates="invitations")
     sender: Optional["User"] = Relationship(
         back_populates="sent_invitations",
         sa_relationship_kwargs={"foreign_keys": "[DeckInvitation.sender_id]"}
     )
-
-    def serialize(self) -> Dict[str, Any]:
-        """Serialize DeckInvitation for API response."""
-        return {
-            "invitation_id": self.invitation_id,
-            "deck_id": self.deck_id,
-            "sender_id": self.sender_id,
-            "recipient_email": self.recipient_email,
-            "message": self.message,
-            "status": self.status,
-            "expires_at": self.expires_at,
-            "created_at": self.created_at,
-            "accepted_at": self.accepted_at,
-        }
 
 
 class UploadedFile(SQLModel, table=True):
@@ -440,21 +360,9 @@ class UploadedFile(SQLModel, table=True):
         description="Soft delete timestamp"
     )
 
-    # Relationships
     user: Optional["User"] = Relationship(back_populates="uploaded_files")
     deck: Optional["Deck"] = Relationship(back_populates="files")
 
-    def serialize(self) -> Dict[str, Any]:
-        """Serialize UploadedFile for API response."""
-        return {
-            "file_id": self.file_id,
-            "file_url": self.file_url,
-            "file_name": self.file_name,
-            "file_size": self.file_size,
-            "mime_type": self.mime_type,
-            "uploaded_at": self.uploaded_at,
-            "deck_id": self.deck_id,
-        }
 
 
 class ContentReport(SQLModel, table=True):
@@ -514,7 +422,6 @@ class ContentReport(SQLModel, table=True):
         description="Internal moderator notes"
     )
 
-    # Relationships
     deck: Optional["Deck"] = Relationship(back_populates="reports")
     reporter: Optional["User"] = Relationship(
         back_populates="content_reports",
@@ -607,7 +514,6 @@ class AuthToken(SQLModel, table=True):
         description="When the token was created"
     )
 
-    # Relationships
     user: Optional["User"] = Relationship(back_populates="auth_tokens")
 
 

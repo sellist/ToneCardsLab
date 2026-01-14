@@ -1,7 +1,7 @@
-"""Authentication-related Pydantic models."""
+"""Authentication-related DTOs."""
 
 from pydantic import BaseModel, Field, EmailStr
-from .common import TokenResponse
+from uuid import UUID
 
 
 class LoginRequest(BaseModel):
@@ -10,9 +10,17 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=8, description="User's password")
 
 
+class TokenResponse(BaseModel):
+    """OAuth/Authentication token response."""
+    access_token: str = Field(..., description="JWT access token")
+    refresh_token: str | None = Field(None, description="JWT refresh token for obtaining new access tokens")
+    token_type: str = Field(default="Bearer", description="Token type")
+    expires_in: int = Field(..., description="Access token expiration time in seconds")
+
+
 class LoginResponse(TokenResponse):
     """Login response with user information."""
-    user_id: str = Field(..., description="UUID of the authenticated user")
+    user_id: UUID = Field(..., description="UUID of the authenticated user")
 
 
 class RefreshTokenRequest(BaseModel):

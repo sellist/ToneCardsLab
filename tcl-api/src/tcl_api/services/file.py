@@ -1,13 +1,15 @@
 """File management service."""
 
-from typing import List, Dict, Any, Optional
+from typing import List, Optional, Tuple
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from tcl_api.config import get_logger
 from tcl_api.internal.injectors import get_dao, initialize_dao_factory
-from tcl_api.models.entities import UploadedFile
+from tcl_api.models.db.entities import UploadedFile
+from tcl_api.models.file import FileRead
+from tcl_api.models.mappers import file_to_read
 
 
 @get_dao(UploadedFile)
@@ -29,21 +31,21 @@ class FileService:
             )
         return file
 
-    def get_file(self, file_id: UUID) -> Dict[str, Any]:
+    def get_file(self, file_id: UUID) -> FileRead:
         """Get file metadata by ID."""
         self.logger.debug(f"Retrieving file {file_id}")
 
         file = self._check_file_exists(file_id)
 
         self.logger.info(f"Successfully retrieved file {file_id}")
-        return file.serialize()
+        return file_to_read(file)
 
     def get_user_files(
         self,
         user_id: UUID,
         skip: int = 0,
         limit: int = 20
-    ) -> tuple[List[Dict[str, Any]], int]:
+    ) -> Tuple[List[FileRead], int]:
         """Get all files uploaded by a user."""
         self.logger.debug(f"Retrieving files for user {user_id}")
 
@@ -52,9 +54,9 @@ class FileService:
 
         self.logger.info(f"Retrieved {len(files)} files for user {user_id}")
 
-        return [f.serialize() for f in files], total_size
+        return [file_to_read(f) for f in files], total_size
 
-    def get_deck_files(self, deck_id: UUID) -> List[Dict[str, Any]]:
+    def get_deck_files(self, deck_id: UUID) -> List[FileRead]:
         """Get all files associated with a deck."""
         self.logger.debug(f"Retrieving files for deck {deck_id}")
 
@@ -62,7 +64,7 @@ class FileService:
 
         self.logger.info(f"Retrieved {len(files)} files for deck {deck_id}")
 
-        return [f.serialize() for f in files]
+        return [file_to_read(f) for f in files]
 
     def create_file(
         self,
@@ -72,7 +74,7 @@ class FileService:
         mime_type: str,
         file_url: str,
         deck_id: Optional[UUID] = None
-    ) -> Dict[str, Any]:
+    ) -> FileRead:
         """Create a new file record."""
         self.logger.debug(f"Creating file {file_name} for user {user_id}")
 
@@ -88,7 +90,7 @@ class FileService:
         file = self.file_dao.create(file_data)
 
         self.logger.info(f"Successfully created file {file.file_id}")
-        return file.serialize()
+        return file_to_read(file)
 
     def delete_file(self, file_id: UUID) -> bool:
         """Soft delete a file."""
@@ -107,7 +109,6 @@ class FileService:
         return True
 
     def permanently_delete_file(self, file_id: UUID) -> bool:
-        """Permanently delete a file."""
         self.logger.debug(f"Permanently deleting file {file_id}")
 
         file = self.file_dao.get_by_id(file_id)

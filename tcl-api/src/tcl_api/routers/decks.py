@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
-from tcl_api.models.dto import DeckCreate, DeckSummary, DeckUpdate, BulkDeleteDecksRequest
-from tcl_api.models.entities import Deck
+from tcl_api.models.dto import DeckCreate, DeckSummary, DeckUpdate, BulkDeleteDecksRequest, DeckRead
 from tcl_api.repository.db import get_db
-from tcl_api.repository.db.daos import DeckDAO, UserDAO, CardDAO, DeckViewerDAO
+from tcl_api.repository.db.daos import DeckDAO, UserDAO
 from tcl_api.services.deck import DeckService
 
 from tcl_api.models.builders import ApiResponseBuilder
@@ -17,7 +16,7 @@ from tcl_api.models.response import ApiResponse
 router = APIRouter(prefix="/decks", tags=["decks"])
 
 
-@router.post("/", response_model=ApiResponse[Deck])
+@router.post("/", response_model=ApiResponse[DeckRead])
 def create_deck(
     deck_data: DeckCreate,
     owner_id: UUID = Query(..., description="User ID of deck owner"),
@@ -56,12 +55,13 @@ def create_deck(
             card = deck_service.card_dao.create(card_dict)
             created_cards.append(card)
 
-    deck_response_data = deck.serialize(created_cards, [])
+    from tcl_api.models.mappers import deck_to_read
+    deck_response_data = deck_to_read(deck, created_cards, [])
 
     return ApiResponseBuilder.created().data(deck_response_data).message("Deck created successfully").build()
 
 
-@router.get("/{deck_id}", response_model=ApiResponse[Deck])
+@router.get("/{deck_id}", response_model=ApiResponse[DeckRead])
 def get_deck(deck_id: UUID, db: Session = Depends(get_db)):
     """Get full deck details including all cards."""
     deck_service = DeckService(db)
@@ -124,7 +124,6 @@ def list_decks(
 
 @router.get("/user/{user_id}/dashboard", response_model=ApiResponse[Dict[str, List[DeckSummary]]])
 def get_user_decks(user_id: UUID, db: Session = Depends(get_db)):
-    """Get user's owned and shared decks for dashboard."""
     user_dao = UserDAO(db)
     deck_service = DeckService(db)
 
@@ -148,7 +147,7 @@ def get_user_decks(user_id: UUID, db: Session = Depends(get_db)):
     return ApiResponseBuilder.ok().data(dashboard_data).build()
 
 
-@router.patch("/{deck_id}", response_model=ApiResponse[Deck])
+@router.patch("/{deck_id}", response_model=ApiResponse[DeckRead])
 def update_deck(
     deck_id: UUID,
     deck_update: DeckUpdate,
@@ -168,7 +167,8 @@ def update_deck(
     cards = deck_service.card_dao.get_by_deck(deck_id)
     viewer_ids = deck_service.deckviewer_dao.get_viewer_ids(deck_id)
 
-    deck_data = deck.serialize(cards, viewer_ids)
+    from tcl_api.models.mappers import deck_to_read
+    deck_data = deck_to_read(deck, cards, viewer_ids)
 
     return ApiResponseBuilder.ok().data(deck_data).message("Deck updated successfully").build()
 
@@ -221,15 +221,20 @@ def bulk_delete_decks(
     return ApiResponseBuilder.ok().data(bulk_operation_data).message(f"Bulk delete completed: {success_count} successful, {len(failed_ids)} failed").build()
 
 
-@router.post("/{deck_id}/toggle-public", response_model=ApiResponse[Deck])
+@router.post("/{deck_id}/toggle-public", response_model=ApiResponse[DeckRead])
 def toggle_public_status(deck_id: UUID, db: Session = Depends(get_db)):
     deck_service = DeckService(db)
 
-    deck = deck_service.deck_dao.update(deck_id, {"is_public": not deck.is_public})
+    existing_deck = deck_service.deck_dao.get_by_id(deck_id)
+    if not existing_deck:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Deck not found")
+
+    updated_deck = deck_service.deck_dao.update(deck_id, {"is_public": not existing_deck.is_public})
 
     cards = deck_service.card_dao.get_by_deck(deck_id)
     viewer_ids = deck_service.deckviewer_dao.get_viewer_ids(deck_id)
 
-    deck_data = deck.serialize(cards, viewer_ids)
-    return ApiResponseBuilder.ok().data(deck_data).message(f"Deck is now {'public' if deck.is_public else 'private'}").build()
+    from tcl_api.models.mappers import deck_to_read
+    deck_data = deck_to_read(updated_deck, cards, viewer_ids)
+    return ApiResponseBuilder.ok().data(deck_data).message(f"Deck is now {'public' if updated_deck.is_public else 'private'}").build()
 
